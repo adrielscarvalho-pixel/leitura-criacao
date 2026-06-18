@@ -655,10 +655,10 @@
     display:flex; align-items:center; justify-content:center;
     background:#dfe6ee; border:5px solid #2a2f45; border-radius:3px; box-shadow:0 5px 12px rgba(0,0,0,.4); }
   /* bed */
-  .room-bed{ position:absolute; left:3%; bottom:30%; width:clamp(150px,22vw,260px); height:clamp(54px,8vw,86px); z-index:1;
-    background:#6b4636; border-radius:6px 6px 3px 3px; box-shadow:0 8px 14px rgba(0,0,0,.4); }
-  .bed-blanket{ position:absolute; right:0; top:18%; width:64%; height:82%; background:linear-gradient(180deg,#3f7fb0,#2f6090); border-radius:4px; }
-  .bed-pillow{ position:absolute; left:5%; top:6%; width:30%; height:55%; background:#ede6d2; border-radius:6px; }
+  .room-bed{ position:absolute; left:3%; bottom:32%; width:clamp(150px,22vw,250px); height:clamp(120px,20vh,210px); z-index:1;
+    background:linear-gradient(180deg,#7a5240 0%, #6b4636 40%, #5a3a2c 100%); border-radius:8px 8px 3px 3px; box-shadow:0 10px 16px rgba(0,0,0,.45); }
+  .bed-blanket{ position:absolute; left:0; right:0; bottom:0; height:46%; background:linear-gradient(180deg,#4a8ac0,#2f6090); border-radius:0 0 3px 3px; box-shadow:inset 0 6px 0 rgba(255,255,255,.12); }
+  .bed-pillow{ position:absolute; left:8%; top:8%; width:38%; height:22%; background:#ede6d2; border-radius:8px; box-shadow:0 3px 6px rgba(0,0,0,.25); }
   /* door (right wall) that opens */
   .room-door{ position:absolute; right:5%; bottom:32%; width:clamp(56px,8vw,82px); height:clamp(120px,21vw,180px);
     z-index:1; perspective:520px; }
@@ -735,7 +735,7 @@
 
   .crash-redtext{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:92%; text-align:center; z-index:4; color:#ff1e1e;
+    width:92%; text-align:center; z-index:55; color:#ff1e1e;
     font-family:"Courier New",monospace; font-weight:bold;
     font-size:clamp(24px,5.6vw,54px); line-height:1.35; letter-spacing:.03em;
     text-shadow:0 0 14px rgba(255,0,0,.7), 0 0 2px rgba(255,255,255,.4);
@@ -753,7 +753,7 @@
   /* Undertale-style dialogue box */
   .crash-dialog{
     position:absolute; left:50%; bottom:7%; transform:translateX(-50%) translateY(20px);
-    width:min(720px,92vw); z-index:4;
+    width:min(720px,92vw); z-index:60;
     background:#000; border:5px solid #fff; border-radius:4px;
     display:flex; gap:18px; align-items:center; padding:18px 22px;
     opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s ease;
@@ -768,6 +768,60 @@
   .dlg-text{ font-family:"Courier New",monospace; color:#fff; font-size:clamp(16px,3vw,24px); line-height:1.45; min-height:1.4em; }
   .dlg-text::after{ content:"_"; animation:caret .6s steps(1) infinite; opacity:.8; }
   @keyframes caret{ 50%{opacity:0} }
+
+  /* ===================== JOGUINHO: FUGA DO QUARTO ===================== */
+  #tutorial{ position:absolute; inset:0; z-index:30; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); }
+  #tutorial.show{ display:flex; animation:fadeBg .4s ease; }
+  .tut-box{ max-width:86%; text-align:center; padding:30px 32px; border:4px solid #fff; border-radius:8px; background:#000;
+    font-family:"Courier New",monospace; color:#fff; font-size:clamp(18px,3.6vw,32px); line-height:1.6; letter-spacing:.03em;
+    box-shadow:0 0 0 3px #000, 0 20px 60px rgba(0,0,0,.6); animation:tutPulse 1.3s ease-in-out infinite; }
+  .tut-box b{ color:#ffd84a; }
+  @keyframes tutPulse{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+
+  #gameTimer{ position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:8; display:none;
+    font-family:"Courier New",monospace; font-weight:bold; font-size:clamp(28px,5vw,48px); color:#fff;
+    text-shadow:0 0 10px rgba(0,0,0,.9), 0 0 16px rgba(255,70,70,.6); }
+  #gameTimer.warn{ color:#ff5a5a; animation:timerWarn .4s steps(2,end) infinite; }
+  @keyframes timerWarn{ 0%,100%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.18)} }
+  #gameHint{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:8; display:none;
+    font-family:"Courier New",monospace; font-size:clamp(11px,2vw,16px); color:#cdd6e6; letter-spacing:.04em;
+    background:rgba(0,0,0,.45); padding:6px 14px; border-radius:20px; }
+  #gameHint.show{ display:block; }
+
+  #player{ position:absolute; left:0; top:0; bottom:auto; z-index:6; width:clamp(54px,9vw,86px);
+    display:none; animation:none; transform-origin:bottom center; will-change:transform;
+    image-rendering:pixelated; filter:drop-shadow(0 7px 5px rgba(0,0,0,.55)); }
+  #player.on{ display:block; }
+
+  /* big full-screen message (GAME OVER / FINAL BOM) */
+  #gameMsg{ position:absolute; inset:0; z-index:70; display:none; align-items:center; justify-content:center;
+    background:#000; text-align:center; padding:0 20px;
+    font-family:"Courier New",monospace; font-weight:bold; font-size:clamp(34px,9vw,86px);
+    letter-spacing:.08em; text-shadow:0 0 22px currentColor; }
+  #gameMsg.show{ display:flex; animation:fadeBg .5s ease; }
+
+  /* cinematic scene (denúncia + prisão) */
+  #cineScene{ position:absolute; inset:0; z-index:50; display:none; background:#06070c; overflow:hidden; }
+  #cineScene.show{ display:block; animation:fadeBg .6s ease; }
+  .cine-floor{ position:absolute; left:0; right:0; bottom:0; height:22%; background:linear-gradient(180deg,#1a1d28,#0a0c12); }
+  .crowd{ position:absolute; bottom:22%; display:flex; align-items:flex-end; gap:min(1.8vw,16px); }
+  .crowd.narr{ left:6%; }
+  .crowd.listeners{ right:5%; }
+  .cchar{ width:clamp(40px,6vw,70px); image-rendering:pixelated; filter:drop-shadow(0 6px 5px rgba(0,0,0,.55));
+    animation:idleBreath 2.6s ease-in-out infinite; }
+  .cchar.sm{ width:clamp(30px,4.6vw,52px); }
+  .cchar:nth-child(2){ animation-delay:.5s } .cchar:nth-child(3){ animation-delay:1s }
+  .cchar:nth-child(4){ animation-delay:.3s } .cchar:nth-child(5){ animation-delay:.8s }
+  .cchar svg{ width:100%; height:auto; display:block; }
+  .cine-label{ position:absolute; top:9%; left:0; right:0; text-align:center; color:#cdd6e6;
+    font-family:"Courier New",monospace; font-size:clamp(12px,2.4vw,18px); letter-spacing:.2em; opacity:.7; }
+  /* prison */
+  .prison{ position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; padding-bottom:9%;
+    background:radial-gradient(circle at 50% 38%, #232733 0%, #0a0c12 70%); }
+  .prison .cchar{ width:clamp(96px,17vw,160px); }
+  .bars{ position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(90deg, transparent 0 54px, rgba(16,18,24,.96) 54px 66px);
+    box-shadow:inset 0 0 70px rgba(0,0,0,.75); }
 
   /* utility */
   .clickable{ cursor:pointer; }
@@ -917,9 +971,15 @@
         <div class="char" id="ch-cranio"></div>
         <div class="char tia" id="ch-matilde"></div>
       </div>
+      <div class="char" id="player"></div>
       <div class="movie-vignette"></div>
       <div class="movie-alarm" id="movieAlarm"></div>
     </div>
+    <div id="gameTimer"></div>
+    <div id="gameHint">A / D mover · ESPAÇO pular · chegue na janela!</div>
+    <div id="tutorial"><div class="tut-box">TECLA <b>A</b> MOVIMENTA À ESQUERDA,<br>TECLA <b>D</b> À DIREITA<br>E <b>ESPAÇO</b> PULA!</div></div>
+    <div id="cineScene"></div>
+    <div id="gameMsg"></div>
     <div class="crash-redtext" id="crashRed">TEMOS QUE FUGIR!<br>RÁPIDO!</div>
     <div class="crash-dialog" id="crashDialog">
       <div class="dlg-portrait" id="dlgPortrait"></div>
@@ -1320,10 +1380,210 @@ function runCrashSequence(){
 
   runQueue(lines, 0, ()=>{
     red.classList.remove('show'); alarm.classList.remove('on');
-    crash.classList.remove('active');
-    show(document.getElementById('start'));
-    startTitleGlitch();
+    startEscape();   // agora começa o joguinho (o quarto continua visível)
   });
+}
+
+/* ============================================================
+   JOGUINHO: FUGA DO QUARTO (controla o Crânio)
+   ============================================================ */
+// sprites extras para a cena da denúncia
+CHAR.police = `<svg viewBox="0 0 40 64" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+  <rect x="12" y="58" width="8" height="5" fill="#14161d"/><rect x="20" y="58" width="8" height="5" fill="#14161d"/>
+  <rect x="13" y="44" width="7" height="15" fill="#1e2a44"/><rect x="20" y="44" width="7" height="15" fill="#18233a"/>
+  <rect x="10" y="27" width="20" height="18" fill="#2c4a8a"/><rect x="10" y="27" width="20" height="3" fill="#37589e"/>
+  <rect x="5" y="28" width="6" height="13" fill="#2c4a8a"/><rect x="29" y="28" width="6" height="13" fill="#24407a"/>
+  <rect x="5" y="39" width="6" height="4" fill="#f0c79a"/><rect x="29" y="39" width="6" height="4" fill="#f0c79a"/>
+  <rect x="22" y="31" width="4" height="4" fill="#e8c020"/>
+  <rect x="12" y="11" width="16" height="15" fill="#f0c79a"/>
+  <rect x="9" y="6" width="22" height="5" fill="#1e2a44"/><rect x="7" y="10" width="26" height="3" fill="#14161d"/><rect x="18" y="7" width="4" height="3" fill="#e8c020"/>
+  <rect x="15" y="16" width="2" height="3" fill="#222"/><rect x="23" y="16" width="2" height="3" fill="#222"/>
+  <rect x="17" y="21" width="6" height="1" fill="#7a3030"/></svg>`;
+CHAR.mayor = `<svg viewBox="0 0 40 64" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+  <rect x="12" y="58" width="8" height="5" fill="#15151a"/><rect x="20" y="58" width="8" height="5" fill="#15151a"/>
+  <rect x="13" y="44" width="7" height="15" fill="#26262e"/><rect x="20" y="44" width="7" height="15" fill="#1f1f27"/>
+  <rect x="10" y="27" width="20" height="18" fill="#2a2a33"/>
+  <rect x="18" y="27" width="4" height="18" fill="#dfe6ee"/><rect x="19" y="29" width="2" height="7" fill="#8a2b2b"/>
+  <rect x="10" y="29" width="20" height="3" fill="#1a8a4a"/>
+  <rect x="5" y="28" width="6" height="13" fill="#2a2a33"/><rect x="29" y="28" width="6" height="13" fill="#23232b"/>
+  <rect x="5" y="39" width="6" height="4" fill="#f0c79a"/><rect x="29" y="39" width="6" height="4" fill="#f0c79a"/>
+  <rect x="12" y="11" width="16" height="15" fill="#f0c79a"/>
+  <rect x="11" y="6" width="18" height="6" fill="#9a9a9a"/><rect x="11" y="9" width="3" height="4" fill="#9a9a9a"/><rect x="26" y="9" width="3" height="4" fill="#9a9a9a"/>
+  <rect x="15" y="16" width="2" height="3" fill="#222"/><rect x="23" y="16" width="2" height="3" fill="#222"/>
+  <rect x="15" y="20" width="10" height="2" fill="#7a7a7a"/></svg>`;
+function kidSprite(shirt, hair){ return `<svg viewBox="0 0 40 64" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+  <rect x="13" y="58" width="6" height="4" fill="#2a2a2a"/><rect x="21" y="58" width="6" height="4" fill="#2a2a2a"/>
+  <rect x="14" y="46" width="6" height="12" fill="#3a3f4a"/><rect x="20" y="46" width="6" height="12" fill="#333842"/>
+  <rect x="11" y="30" width="18" height="16" fill="${shirt}"/>
+  <rect x="6" y="31" width="5" height="11" fill="${shirt}"/><rect x="29" y="31" width="5" height="11" fill="${shirt}"/>
+  <rect x="6" y="40" width="5" height="3" fill="#f0c79a"/><rect x="29" y="40" width="5" height="3" fill="#f0c79a"/>
+  <rect x="13" y="13" width="14" height="15" fill="#f0c79a"/>
+  <rect x="12" y="9" width="16" height="6" fill="${hair}"/><rect x="12" y="13" width="3" height="4" fill="${hair}"/><rect x="25" y="13" width="3" height="4" fill="${hair}"/>
+  <rect x="15" y="18" width="2" height="3" fill="#222"/><rect x="23" y="18" width="2" height="3" fill="#222"/>
+  <rect x="17" y="23" width="6" height="1" fill="#7a3030"/></svg>`; }
+
+// timer helper que respeita o cancelamento global
+function gsched(ms, fn){ const id=setTimeout(fn, ms); crashTimers.push(()=>clearTimeout(id)); return id; }
+
+// fala em caixa Undertale (sem destaque de cena, usado nos finais)
+function playLines(lines, onEnd){
+  const dlg=document.getElementById('crashDialog'), dt=document.getElementById('dlgText'),
+        dn=document.getElementById('dlgName'), dp=document.getElementById('dlgPortrait');
+  let i=0;
+  (function nx(){
+    if(i>=lines.length){ if(onEnd) onEnd(); return; }
+    const o=lines[i++];
+    if(o.before) o.before();
+    if(o.text){
+      dp.style.display = o.portrait ? 'block':'none';
+      if(o.portrait) dp.innerHTML = CHAR[o.portrait];
+      dn.textContent = o.name||''; dlg.classList.add('show');
+      typeText(dt, o.text, o.speed||46, ()=> gsched(o.hold||2400, ()=>{ if(o.after) o.after(); nx(); }));
+    } else { gsched(o.wait||600, ()=>{ if(o.after) o.after(); nx(); }); }
+  })();
+}
+
+function showGameMsg(text, color, dur, cb){
+  const m=document.getElementById('gameMsg');
+  m.textContent=text; m.style.color=color; m.classList.add('show');
+  gsched(dur, ()=>{ m.classList.remove('show'); if(cb) cb(); });
+}
+
+function endToStart(){
+  const crash=document.getElementById('crash');
+  document.getElementById('player').classList.remove('on');
+  const tm=document.getElementById('gameTimer'); tm.style.display='none'; tm.classList.remove('warn');
+  document.getElementById('gameHint').classList.remove('show');
+  document.getElementById('cineScene').classList.remove('show');
+  document.getElementById('gameMsg').classList.remove('show');
+  document.getElementById('crashDialog').classList.remove('show');
+  document.getElementById('movieStage').style.display='';
+  crash.classList.remove('active');
+  show(document.getElementById('start'));
+  startTitleGlitch();
+}
+
+// 1) tutorial → 2) jogo
+function startEscape(){
+  document.getElementById('crashRed').classList.remove('show');
+  document.getElementById('movieAlarm').classList.remove('on');
+  document.getElementById('crashDialog').classList.remove('show');
+  const tut=document.getElementById('tutorial'); tut.classList.add('show');
+  gsched(5000, ()=>{ tut.classList.remove('show'); playGame(); });
+}
+
+let gameToken = 0, game = null;
+function playGame(){
+  gameToken++; const tok = gameToken;
+  document.getElementById('movieStage').style.display='none';
+  const P=document.getElementById('player'); P.innerHTML=CHAR.cranio; P.classList.add('on');
+  document.getElementById('gameHint').classList.add('show');
+  const timerEl=document.getElementById('gameTimer');
+
+  // geometria do quarto
+  const pr=P.getBoundingClientRect(), pw=pr.width, ph=pr.height;
+  const floorY=document.querySelector('.room-floor').getBoundingClientRect().top;
+  const bed=document.querySelector('.room-bed').getBoundingClientRect();
+  const win=document.querySelector('.room-window').getBoundingClientRect();
+  const g={ x: window.innerWidth*0.6, y: floorY-ph, vy:0, w:pw, h:ph, face:1,
+            left:false, right:false, onGround:true, over:false, floorY, bed, win };
+  game=g;
+
+  // timer 30s
+  let t=30; timerEl.style.display='block'; timerEl.classList.remove('warn'); timerEl.textContent='30';
+  const tid=setInterval(()=>{ if(g.over||tok!==gameToken){ clearInterval(tid); return; }
+    t--; timerEl.textContent=String(t); if(t<=10) timerEl.classList.add('warn');
+    if(t<=0){ clearInterval(tid); loseGame(); } }, 1000);
+  crashTimers.push(()=>clearInterval(tid));
+
+  // pulo proporcional à altura da tela (~30% da altura) → janela alcançável da cama
+  const JV = Math.max(18, Math.sqrt(0.55 * window.innerHeight));
+  // controles A/D/Espaço
+  const kd=e=>{ if(g.over) return; const k=(e.key||'').toLowerCase();
+    if(k==='a'||k==='arrowleft'){ g.left=true; g.face=-1; }
+    else if(k==='d'||k==='arrowright'){ g.right=true; g.face=1; }
+    else if(k===' '||e.code==='Space'||k==='arrowup'||k==='w'){ e.preventDefault(); if(g.onGround){ g.vy=-JV; g.onGround=false; } } };
+  const ku=e=>{ const k=(e.key||'').toLowerCase(); if(k==='a'||k==='arrowleft') g.left=false; if(k==='d'||k==='arrowright') g.right=false; };
+  window.addEventListener('keydown',kd); window.addEventListener('keyup',ku);
+  g.cleanup=()=>{ window.removeEventListener('keydown',kd); window.removeEventListener('keyup',ku); clearInterval(tid); };
+
+  (function loop(){
+    if(tok!==gameToken || g.over) return;
+    g.x += (g.right?1:0)*6 - (g.left?1:0)*6;
+    g.x = Math.max(2, Math.min(window.innerWidth - g.w - 2, g.x));
+    g.vy += 0.9; g.y += g.vy; g.onGround=false;
+    if(g.y+g.h >= g.floorY){ g.y=g.floorY-g.h; g.vy=0; g.onGround=true; }
+    const b=g.bed;  // cama = plataforma (pousa só por cima)
+    if(g.vy>=0 && g.x+g.w>b.left+8 && g.x<b.right-8 && g.y+g.h>=b.top && g.y+g.h<=b.top+g.vy+18){
+      g.y=b.top-g.h; g.vy=0; g.onGround=true;
+    }
+    const w=g.win, cx=g.x+g.w/2;  // chegou na janela?
+    if(cx>w.left-8 && cx<w.right+8 && g.y < w.bottom-6 && g.y+g.h > w.top){ return winGame(); }
+    P.style.transform=`translate(${g.x}px,${g.y}px) scaleX(${g.face})`;
+    requestAnimationFrame(loop);
+  })();
+}
+
+function loseGame(){
+  if(!game || game.over) return; game.over=true; if(game.cleanup) game.cleanup();
+  document.getElementById('gameHint').classList.remove('show');
+  document.getElementById('gameTimer').classList.remove('warn');
+  playLines([
+    { wait:300 },
+    { portrait:'matilde', name:'Tia Matilde', text:'Vocês sabem demais...', speed:58, hold:2400 },
+  ], ()=>{
+    document.getElementById('crashDialog').classList.remove('show');
+    document.getElementById('gameTimer').style.display='none';
+    document.getElementById('player').classList.remove('on');
+    showGameMsg('GAME OVER', '#ff3b3b', 3000, endToStart);
+  });
+}
+
+function winGame(){
+  if(!game || game.over) return; game.over=true; if(game.cleanup) game.cleanup();
+  document.getElementById('player').classList.remove('on');
+  document.getElementById('gameTimer').style.display='none';
+  document.getElementById('gameHint').classList.remove('show');
+  const cine=document.getElementById('cineScene');
+  buildCrowd(cine); cine.classList.add('show');
+  playLines([
+    { wait:1300 },
+    { portrait:'miguel', name:'Miguel', text:'Sim, sim! Ela é a dona de tudo!', speed:48, hold:2600 },
+    { portrait:'cranio', name:'Crânio', text:'Por favor, nos ajudem!', speed:48, hold:2600 },
+  ], ()=>{
+    document.getElementById('crashDialog').classList.remove('show');
+    cine.classList.remove('show');
+    gsched(800, ()=>{
+      buildPrison(cine); cine.classList.add('show');
+      playLines([
+        { wait:900 },
+        { portrait:'matilde', name:'Tia Matilde', text:'Eles vão me pagar...', speed:58, hold:2600 },
+      ], ()=>{
+        document.getElementById('crashDialog').classList.remove('show');
+        cine.classList.remove('show');
+        gsched(500, ()=> showGameMsg('FINAL BOM', '#7CFC8A', 3400, endToStart));
+      });
+    });
+  });
+}
+
+function buildCrowd(cine){
+  cine.innerHTML = `
+    <div class="cine-label">NA DELEGACIA...</div>
+    <div class="cine-floor"></div>
+    <div class="crowd narr">
+      <div class="cchar">${CHAR.miguel}</div><div class="cchar">${CHAR.cranio}</div>
+    </div>
+    <div class="crowd listeners">
+      <div class="cchar sm">${kidSprite('#c0392b','#3a2a18')}</div>
+      <div class="cchar sm">${kidSprite('#2f7d4f','#2c1d10')}</div>
+      <div class="cchar sm">${kidSprite('#2f6fc8','#5a3a22')}</div>
+      <div class="cchar">${CHAR.mayor}</div>
+      <div class="cchar">${CHAR.police}</div><div class="cchar">${CHAR.police}</div><div class="cchar">${CHAR.police}</div>
+    </div>`;
+}
+function buildPrison(cine){
+  cine.innerHTML = `<div class="prison"><div class="cchar">${CHAR.matilde}</div></div><div class="bars"></div>`;
 }
 
 function runCutscene(){
