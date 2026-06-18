@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Leitura e Criação — Intro</title>
+<style>
+  /* ===================== RESET / BASE ===================== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root{
+    --gold:#e8c170;
+    --gold-deep:#b8862f;
+    --ink:#1a1410;
+    --paper:#f4ead2;
+    --glow:#ffd87a;
+  }
+  html,body{
+    width:100%; height:100%; overflow:hidden;
+    background:#05060a;
+    font-family:"Georgia","Times New Roman",serif;
+    cursor:default;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{ position:fixed; inset:0; overflow:hidden; }
+
+  /* layer helper */
+  .layer{ position:absolute; inset:0; display:none; }
+  .layer.active{ display:block; }
+
+  /* ===================== BACKGROUND (deep space + vignette) ===================== */
+  .deep-bg{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(1200px 700px at 50% 35%, #122036 0%, #0a0f1c 45%, #05060a 100%);
+  }
+  .vignette{
+    position:absolute; inset:0; pointer-events:none;
+    box-shadow: inset 0 0 280px 60px rgba(0,0,0,.85);
+    background:radial-gradient(circle at 50% 50%, transparent 55%, rgba(0,0,0,.6) 100%);
+  }
+  /* drifting nebula dust */
+  .dust{ position:absolute; inset:-20%; pointer-events:none; opacity:.35;
+    background:
+      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.6), transparent),
+      radial-gradient(2px 2px at 70% 60%, rgba(255,255,255,.45), transparent),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1.5px 1.5px at 85% 20%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 10% 70%, rgba(255,255,255,.5), transparent);
+    background-size:600px 600px,500px 500px,700px 700px,400px 400px,300px 300px;
+    animation:dustDrift 60s linear infinite;
+  }
+  @keyframes dustDrift{ from{transform:translateX(0)} to{transform:translateX(-120px)} }
+
+  /* ===================== FLYING BOOKS CANVAS ===================== */
+  #books, #hubBooks, #secBooks, #secretBooks{ position:absolute; inset:0; }
+
+  /* ===================== START MENU ===================== */
+  #start{ z-index:5; }
+  .title-wrap{
+    position:absolute; top:14%; left:50%; transform:translateX(-50%);
+    text-align:center; width:92%;
+    animation:floatTitle 6s ease-in-out infinite;
+  }
+  @keyframes floatTitle{ 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-10px)} }
+  /* graceful entrance for the intro text & menu */
+  @keyframes introUp{
+    from{ opacity:0; transform:translateY(38px) scale(.96); filter:blur(8px); }
+    to  { opacity:1; transform:translateY(0)   scale(1);   filter:blur(0); }
+  }
+  .game-title{
+    font-size:clamp(38px,8vw,96px);
+    letter-spacing:.06em;
+    color:var(--paper);
+    text-transform:uppercase;
+    text-shadow:
+      0 2px 0 #000,
+      0 0 18px rgba(255,216,122,.55),
+      0 0 45px rgba(232,193,112,.35);
+    background:linear-gradient(180deg,#fff8e6 0%, var(--gold) 55%, var(--gold-deep) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 4px 14px rgba(0,0,0,.6));
+    animation:introUp 1.2s cubic-bezier(.2,.8,.25,1) .15s backwards;
+  }
+  .game-sub{
+    margin-top:.4em; font-size:clamp(13px,2.2vw,20px);
+    letter-spacing:.5em; text-indent:.5em; color:#c9d4e6; opacity:.8;
+    text-transform:uppercase; font-family:"Georgia",serif;
+    animation:introUp 1.2s cubic-bezier(.2,.8,.25,1) .45s backwards;
+  }
+
+  .menu{
+    position:absolute; left:50%; top:54%; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; gap:26px; align-items:center;
+    width:min(420px,86vw);
+  }
+  .btn{
+    position:relative; width:100%;
+    padding:18px 28px;
+    font-family:"Georgia",serif;
+    font-size:clamp(18px,3vw,26px);
+    letter-spacing:.28em; text-indent:.28em;
+    text-transform:uppercase; color:var(--paper);
+    background:linear-gradient(180deg, rgba(30,42,66,.85), rgba(12,18,32,.92));
+    border:2px solid rgba(232,193,112,.5);
+    border-radius:14px;
+    cursor:pointer;
+    overflow:hidden;
+    transition:transform .25s cubic-bezier(.2,.9,.3,1.3), box-shadow .3s ease, border-color .3s, letter-spacing .3s;
+    box-shadow:0 6px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+    text-shadow:0 2px 6px rgba(0,0,0,.6);
+    animation:introUp 1s cubic-bezier(.2,.8,.25,1) backwards;
+  }
+  .menu .btn:nth-child(1){ animation-delay:.85s; }
+  .menu .btn:nth-child(2){ animation-delay:1.05s; }
+  .btn::before{ /* shine sweep */
+    content:""; position:absolute; top:0; left:-130%; width:60%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent);
+    transform:skewX(-20deg);
+    transition:left .6s ease;
+  }
+  .btn::after{ /* gold accent bar */
+    content:""; position:absolute; left:0; top:0; bottom:0; width:0;
+    background:linear-gradient(180deg,var(--glow),var(--gold-deep));
+    box-shadow:0 0 22px var(--glow);
+    transition:width .3s ease; opacity:.9;
+  }
+  .btn:hover{
+    transform:scale(1.05) translateY(-2px);
+    border-color:var(--glow);
+    letter-spacing:.36em; text-indent:.36em;
+    box-shadow:0 10px 34px rgba(0,0,0,.6), 0 0 30px rgba(255,216,122,.35), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .btn:hover::before{ left:140%; }
+  .btn:hover::after{ width:6px; }
+  .btn:active{ transform:scale(.98); }
+  .btn .lbl{ position:relative; z-index:2; }
+
+  .btn-exit{ opacity:.92; }
+  .btn-exit:hover{ border-color:#ff8a8a; box-shadow:0 10px 34px rgba(0,0,0,.6), 0 0 28px rgba(255,90,90,.35); }
+  .btn-exit:hover::after{ background:linear-gradient(180deg,#ff9b9b,#a32626); box-shadow:0 0 22px #ff6b6b; }
+
+  .hint{
+    position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+    color:#7e8aa2; letter-spacing:.25em; font-size:12px; text-transform:uppercase;
+    opacity:.7; animation:blink 2.4s ease-in-out infinite;
+  }
+  @keyframes blink{ 0%,100%{opacity:.25} 50%{opacity:.8} }
+
+  /* "exit" goodbye overlay */
+  #bye{
+    position:absolute; inset:0; z-index:50; background:#000; display:none;
+    align-items:center; justify-content:center; color:#9aa6bd;
+    letter-spacing:.4em; font-size:clamp(16px,3vw,26px); text-transform:uppercase;
+    opacity:0; transition:opacity 1.2s ease;
+  }
+
+  /* ===================== CUTSCENE ===================== */
+  #cutscene{ z-index:10; background:radial-gradient(900px 600px at 50% 50%, #14101a 0%, #07070c 70%, #000 100%); }
+  .stage{
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%,-50%) scale(.62);
+    transform-origin:center center;
+  }
+  /* camera zoom-in over ~5s */
+  #cutscene.run .stage{ animation:cameraZoom 5s cubic-bezier(.45,.05,.35,1) forwards; }
+  @keyframes cameraZoom{
+    0%   { transform:translate(-50%,-50%) scale(.62) rotateX(0deg); }
+    55%  { transform:translate(-50%,-50%) scale(1.0) rotateX(0deg); }
+    100% { transform:translate(-50%,-50%) scale(2.7); }
+  }
+
+  /* book built in 3D */
+  .book{ position:relative; width:340px; height:240px; transform-style:preserve-3d;
+         perspective:1400px; filter:drop-shadow(0 40px 50px rgba(0,0,0,.7)); }
+  .book-base{
+    position:absolute; inset:0;
+    background:linear-gradient(135deg,#5a2d12,#3a1c0a);
+    border-radius:10px 16px 16px 10px;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.6), 0 10px 0 #2a1408;
+  }
+  /* visible inner page stack */
+  .pages-stack{
+    position:absolute; top:10px; bottom:10px; left:50%; right:14px;
+    background:repeating-linear-gradient(180deg,#f6edd6 0 3px,#e6d9ba 3px 4px);
+    border-radius:0 6px 6px 0;
+    box-shadow:inset -6px 0 14px rgba(0,0,0,.25);
+  }
+  .pages-stack-left{
+    position:absolute; top:10px; bottom:10px; right:50%; left:14px;
+    background:repeating-linear-gradient(180deg,#f6edd6 0 3px,#e6d9ba 3px 4px);
+    border-radius:6px 0 0 6px;
+    box-shadow:inset 6px 0 14px rgba(0,0,0,.25);
+  }
+  /* the two big covers that open */
+  .cover{
+    position:absolute; top:-6px; bottom:-6px; width:50%;
+    background:
+      linear-gradient(135deg,#7a3c18 0%, #5a2d12 40%, #401f0c 100%);
+    border:3px solid #2f1608;
+  }
+  .cover .emblem{
+    position:absolute; inset:18px; border:2px solid var(--gold-deep);
+    border-radius:6px; opacity:.55;
+    box-shadow:inset 0 0 18px rgba(232,193,112,.25);
+  }
+  .cover .emblem::after{
+    content:"✦"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--gold); font-size:42px; text-shadow:0 0 14px rgba(232,193,112,.6);
+  }
+  .cover-right{
+    left:50%; transform-origin:left center; border-radius:0 12px 12px 0;
+    z-index:6;
+  }
+  .cover-left{
+    right:50%; transform-origin:right center; border-radius:12px 0 0 12px;
+    z-index:6;
+  }
+  /* opening animation triggered with cutscene */
+  #cutscene.run .cover-right{ animation:openRight 1.8s cubic-bezier(.4,.1,.2,1) .3s forwards; }
+  #cutscene.run .cover-left { animation:openLeft  1.8s cubic-bezier(.4,.1,.2,1) .3s forwards; }
+  @keyframes openRight{ from{ transform:rotateY(0deg);} to{ transform:rotateY(-155deg);} }
+  @keyframes openLeft { from{ transform:rotateY(0deg);} to{ transform:rotateY(155deg);} }
+
+  /* turning pages (appear after covers open) */
+  .flip{
+    position:absolute; top:12px; bottom:12px; left:50%; right:16px;
+    transform-origin:left center;
+    background:linear-gradient(90deg,#fffdf5,#efe4c8);
+    border-radius:0 6px 6px 0;
+    box-shadow:-4px 0 12px rgba(0,0,0,.2);
+    opacity:0;
+    z-index:7;                 /* above the open covers */
+  }
+  .flip::before{ /* faint text lines on the page */
+    content:""; position:absolute; inset:18px 16px;
+    background:repeating-linear-gradient(180deg, rgba(120,90,40,.28) 0 1px, transparent 1px 12px);
+  }
+  /* fast, continuous page flipping that loops until the cutscene ends */
+  #cutscene.run .flip{ animation:pageFlip 0.55s linear infinite; }
+  #cutscene.run .flip.f1{ animation-delay:1.55s; }
+  #cutscene.run .flip.f2{ animation-delay:1.64s; }
+  #cutscene.run .flip.f3{ animation-delay:1.73s; }
+  #cutscene.run .flip.f4{ animation-delay:1.82s; }
+  #cutscene.run .flip.f5{ animation-delay:1.91s; }
+  #cutscene.run .flip.f6{ animation-delay:2.00s; }
+  /* page stays fully visible through the whole turn (no backface hiding),
+     with shading to sell the lift; then resets invisibly on the right */
+  @keyframes pageFlip{
+    0%   { transform:rotateY(0deg)    scaleX(1);    opacity:1; filter:brightness(1);    }
+    20%  { transform:rotateY(-55deg)  scaleX(.98);  opacity:1; filter:brightness(1.12); }
+    55%  { transform:rotateY(-150deg) scaleX(.96);  opacity:1; filter:brightness(.72);  }
+    68%  { transform:rotateY(-170deg) scaleX(.95);  opacity:0; filter:brightness(.7);   }
+    69%  { transform:rotateY(0deg)    scaleX(1);    opacity:0; filter:brightness(1);    }
+    82%  { transform:rotateY(0deg)    scaleX(1);    opacity:1; filter:brightness(1);    }
+    100% { transform:rotateY(0deg)    scaleX(1);    opacity:1; filter:brightness(1);    }
+  }
+
+  /* golden particles rising from the book */
+  .sparks{ position:absolute; inset:-40px; pointer-events:none; }
+  .spark{
+    position:absolute; bottom:30%; width:6px; height:6px; border-radius:50%;
+    background:radial-gradient(circle,#fff3c8,#e8c170 60%,transparent);
+    box-shadow:0 0 10px #ffd87a;
+    opacity:0;
+  }
+  #cutscene.run .spark{ animation:rise 2.6s ease-in infinite; }
+  @keyframes rise{
+    0%{ transform:translateY(0) scale(.4); opacity:0; }
+    20%{ opacity:1; }
+    100%{ transform:translateY(-220px) scale(1.1); opacity:0; }
+  }
+
+  /* white flash transition out of cutscene */
+  .whiteflash{
+    position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:30;
+  }
+  #cutscene.run .whiteflash{ animation:flashIn 1.2s ease-in 3.9s forwards; }
+  @keyframes flashIn{ from{opacity:0} to{opacity:1} }
+
+  /* ===================== WHITE / TEXT SCENE ===================== */
+  #white{ z-index:20; background:#fff; }
+  .phrase{
+    position:absolute; left:50%; width:94%; text-align:center;
+    transform:translateX(-50%);
+    color:#1c1c22; opacity:0;
+  }
+  .phrase-1{
+    top:38%; font-size:clamp(28px,6.5vw,72px); font-weight:bold;
+    letter-spacing:.02em;
+    background:linear-gradient(180deg,#2b2b33,#11111a);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    text-shadow:0 6px 20px rgba(0,0,0,.08);
+  }
+  .phrase-2{
+    top:56%; font-size:clamp(38px,7.2vw,76px);
+    font-style:italic; color:#9a7b2e;
+    font-family:"Georgia",serif;
+  }
+  .drop{ animation:dropIn 1.4s cubic-bezier(.16,1.1,.3,1) forwards; }
+  @keyframes dropIn{
+    0%  { transform:translate(-50%,-340px); opacity:0; }
+    60% { opacity:1; }
+    80% { transform:translate(-50%,14px); opacity:1; }
+    100%{ transform:translate(-50%,0); opacity:1; }
+  }
+  .fade-out{ animation:fadeOutUp 1.6s ease forwards; }
+  @keyframes fadeOutUp{ from{opacity:1; filter:blur(0)} to{opacity:0; filter:blur(6px); transform:translate(-50%,-30px)} }
+
+  /* ===== GLITCH effect for the intro title (turns into "BATATA") ===== */
+  .game-title.glitching{
+    position:relative;
+    background:none;
+    -webkit-text-fill-color:#fff8e6; color:#fff8e6;
+    animation:glitchFlicker .18s steps(2,end) infinite;   /* opacity only — keeps centering */
+  }
+  @keyframes glitchFlicker{ 0%,100%{opacity:1} 50%{opacity:.74} }
+  .game-title.glitching::before,
+  .game-title.glitching::after{
+    content:attr(data-text);
+    position:absolute; left:0; top:0; width:100%; text-align:center;
+    -webkit-text-fill-color:initial; pointer-events:none;
+    text-shadow:0 0 8px currentColor;
+  }
+  .game-title.glitching::before{ color:#ff2d55; animation:glitchA .42s steps(2,end) infinite; }
+  .game-title.glitching::after { color:#00e5ff; animation:glitchB .42s steps(2,end) infinite; }
+  @keyframes glitchA{
+    0%  { transform:translate(-4px,-1px); clip-path:inset(0 0 62% 0); }
+    50% { transform:translate( 4px, 1px); clip-path:inset(42% 0 18% 0); }
+    100%{ transform:translate(-2px, 1px); clip-path:inset(72% 0 0 0); }
+  }
+  @keyframes glitchB{
+    0%  { transform:translate( 4px, 1px); clip-path:inset(52% 0 20% 0); }
+    50% { transform:translate(-4px,-1px); clip-path:inset(10% 0 60% 0); }
+    100%{ transform:translate( 2px,-1px); clip-path:inset(0 0 72% 0); }
+  }
+
+  /* "Carregando..." on the white screen */
+  #loading{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:flex; align-items:baseline; gap:2px;
+    font-family:"Georgia",serif; font-size:clamp(22px,4.5vw,42px);
+    letter-spacing:.08em; color:#2a2a32; opacity:0;
+    text-shadow:0 4px 16px rgba(0,0,0,.08);
+  }
+  #loading.show{ animation:loadPulse 1.6s ease-in-out infinite; }
+  #loading.hide{ animation:fadeOutUp 1s ease forwards; }
+  @keyframes loadPulse{ 0%,100%{opacity:.5} 50%{opacity:1} }
+  .load-dots::after{
+    content:""; animation:loadDots 1.4s steps(1,end) infinite;
+  }
+  @keyframes loadDots{
+    0%{content:""} 25%{content:"."} 50%{content:".."} 75%{content:"..."} 100%{content:""}
+  }
+
+  /* credits */
+  #credits{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; opacity:0; z-index:21;
+    background:radial-gradient(900px 600px at 50% 50%, #ffffff 0%, #f3eee4 100%);
+  }
+  #credits.show{ animation:creditsIn 2s ease forwards; }
+  @keyframes creditsIn{ from{opacity:0} to{opacity:1} }
+  .credits-label{
+    font-size:clamp(13px,2.4vw,18px); letter-spacing:.55em; text-indent:.55em;
+    text-transform:uppercase; color:#9a7b2e;
+  }
+  .credits-line{
+    width:120px; height:2px; margin:6px 0 4px;
+    background:linear-gradient(90deg,transparent,var(--gold-deep),transparent);
+  }
+  .credits-names{
+    font-size:clamp(24px,5.4vw,52px);
+    text-align:center; line-height:1.5; color:#23232c;
+    font-family:"Georgia",serif; max-width:90%;
+    text-shadow:0 4px 18px rgba(0,0,0,.08);
+  }
+  .credits-names b{
+    background:linear-gradient(180deg,#caa24a,#8a6418);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  /* credits sliding up to become a header */
+  #credits.to-top{
+    animation:creditsUp 1.6s cubic-bezier(.45,.05,.25,1) forwards;
+    justify-content:flex-start; padding-top:18px;
+  }
+  @keyframes creditsUp{
+    from{ transform:translateY(0); }
+    to  { transform:translateY(-40vh); }
+  }
+  #credits.to-top .credits-names{ font-size:clamp(15px,3vw,24px); line-height:1.35; }
+  #credits.to-top .credits-line{ width:80px; }
+  #credits.compact{ background:transparent; }
+
+  /* ===================== HUB (main menu) ===================== */
+  #hub{ z-index:25; }
+  #hub .deep-bg{
+    background:radial-gradient(1200px 700px at 50% 35%, #122036 0%, #0a0f1c 45%, #05060a 100%);
+  }
+  .hub-head{
+    position:absolute; top:0; left:0; right:0; text-align:center;
+    padding:18px 10px 14px; z-index:3;
+    pointer-events:none;
+  }
+  .hub-head .credits-mini{
+    font-size:clamp(12px,2.4vw,17px); color:#cdb877; letter-spacing:.04em;
+    text-shadow:0 2px 10px rgba(0,0,0,.6);
+  }
+  .hub-head .credits-mini small{
+    display:block; font-size:.62em; letter-spacing:.45em; text-indent:.45em;
+    color:#8fa0bd; text-transform:uppercase; margin-bottom:4px;
+  }
+  .hub-title{
+    position:absolute; top:14%; left:50%; transform:translateX(-50%);
+    font-size:clamp(26px,5vw,52px); text-align:center; width:92%;
+    color:var(--paper); text-transform:uppercase; letter-spacing:.08em;
+    background:linear-gradient(180deg,#fff8e6,var(--gold) 60%,var(--gold-deep));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 4px 14px rgba(0,0,0,.6)); z-index:3;
+  }
+
+  .hub-grid{
+    position:absolute; left:50%; top:54%; transform:translate(-50%,-50%);
+    display:grid; grid-template-columns:repeat(2,1fr); gap:18px;
+    width:min(760px,92vw); z-index:3;
+  }
+  .hub-btn{
+    position:relative; overflow:hidden;
+    padding:22px 20px; min-height:84px;
+    display:flex; align-items:center; gap:14px;
+    font-family:"Georgia",serif; font-size:clamp(15px,2.4vw,21px);
+    letter-spacing:.04em; color:var(--paper); text-align:left;
+    background:linear-gradient(145deg, rgba(34,48,76,.9), rgba(12,18,32,.95));
+    border:2px solid rgba(232,193,112,.45); border-radius:18px;
+    cursor:pointer; opacity:0; transform:translateY(26px) scale(.96);
+    box-shadow:0 8px 26px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+    transition:transform .28s cubic-bezier(.2,.9,.3,1.3), box-shadow .3s, border-color .3s;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);
+  }
+  .hub-btn.in{ animation:btnPop .55s cubic-bezier(.2,1.1,.3,1) forwards; }
+  @keyframes btnPop{ to{ opacity:1; transform:translateY(0) scale(1);} }
+  .hub-btn::before{
+    content:""; position:absolute; top:0; left:-130%; width:55%; height:100%;
+    background:linear-gradient(120deg,transparent,rgba(255,255,255,.32),transparent);
+    transform:skewX(-20deg); transition:left .7s ease;
+  }
+  .hub-btn:hover{
+    transform:translateY(-4px) scale(1.04);
+    border-color:var(--glow);
+    box-shadow:0 14px 38px rgba(0,0,0,.6), 0 0 30px rgba(255,216,122,.35), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .hub-btn:hover::before{ left:150%; }
+  .hub-btn:active{ transform:scale(.98); }
+  .hub-btn .num{
+    flex:0 0 auto; width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:bold; color:#1a1410;
+    background:linear-gradient(180deg,var(--glow),var(--gold-deep));
+    box-shadow:0 0 16px rgba(255,216,122,.5);
+  }
+  .hub-btn .txt{ position:relative; z-index:2; line-height:1.2; }
+
+  /* ===================== CONTENT SECTION ===================== */
+  #section{ z-index:30; }
+  #section .deep-bg{
+    background:radial-gradient(1100px 800px at 50% 30%, #1a2238 0%, #0a1020 55%, #04050a 100%);
+  }
+  .sheet{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(820px,92vw); max-height:82vh; overflow-y:auto;
+    padding:34px 32px 38px; z-index:3;
+    background:linear-gradient(160deg, rgba(244,234,210,.97), rgba(232,218,184,.97));
+    border:1px solid rgba(184,134,47,.5); border-radius:22px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.5);
+    color:#2a2114;
+    opacity:0; animation:sheetIn .6s cubic-bezier(.2,.9,.3,1.1) forwards;
+  }
+  @keyframes sheetIn{ from{opacity:0; transform:translate(-50%,-46%) scale(.97);} to{opacity:1; transform:translate(-50%,-50%) scale(1);} }
+  .sheet::-webkit-scrollbar{ width:10px; }
+  .sheet::-webkit-scrollbar-thumb{ background:rgba(184,134,47,.55); border-radius:8px; }
+  .sheet h2{
+    font-size:clamp(24px,4.6vw,40px); margin-bottom:6px;
+    color:#5a3d12; letter-spacing:.01em;
+  }
+  .sheet .deco-line{ width:100%; height:2px; margin:10px 0 20px;
+    background:linear-gradient(90deg,var(--gold-deep),transparent); }
+  .sheet p{ font-size:clamp(15px,2.4vw,18px); line-height:1.7; margin-bottom:14px; }
+  .sheet ul{ margin:0 0 14px 4px; list-style:none; }
+  .sheet li{ font-size:clamp(15px,2.4vw,18px); line-height:1.65; margin-bottom:12px;
+    padding-left:22px; position:relative; }
+  .sheet li::before{ content:"✦"; position:absolute; left:0; top:0; color:var(--gold-deep); }
+  .sheet li b{ color:#5a3d12; }
+  .sheet .editavel{ color:#8a6a2e; font-style:italic; }
+
+  /* sub-menu choice buttons inside a sheet (e.g. Personagens) */
+  .choice-grid{ display:grid; gap:14px; margin-top:20px; }
+  .choice-btn{
+    display:flex; align-items:center; gap:12px; width:100%;
+    padding:18px 22px; text-align:left; cursor:pointer;
+    font-family:"Georgia",serif; font-size:clamp(16px,2.7vw,21px); color:#3a2a10;
+    background:linear-gradient(145deg,#f0e3c4,#e6d4a8);
+    border:2px solid var(--gold-deep); border-radius:14px;
+    box-shadow:0 4px 14px rgba(0,0,0,.12);
+    transition:transform .22s cubic-bezier(.2,.9,.3,1.2), box-shadow .3s, border-color .3s, background .3s;
+  }
+  .choice-btn:hover{
+    transform:translateY(-3px) scale(1.02); border-color:#8a6418;
+    box-shadow:0 12px 28px rgba(0,0,0,.2);
+    background:linear-gradient(145deg,#f8efd6,#eddfb8);
+  }
+  .choice-btn .ic{
+    flex:0 0 auto; width:38px; height:38px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    background:linear-gradient(180deg,var(--glow),var(--gold-deep)); color:#1a1410;
+  }
+  .back-inline{
+    margin-top:24px; padding:10px 20px; cursor:pointer;
+    font-family:"Georgia",serif; font-size:15px; letter-spacing:.06em; color:#5a3d12;
+    background:rgba(184,134,47,.16); border:1.5px solid var(--gold-deep); border-radius:10px;
+    transition:transform .2s, background .3s;
+  }
+  .back-inline:hover{ transform:translateX(-3px); background:rgba(184,134,47,.3); }
+
+  .back-btn{
+    position:fixed; top:20px; left:20px; z-index:6;
+    display:flex; align-items:center; gap:10px;
+    padding:12px 22px; font-family:"Georgia",serif; font-size:16px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--paper);
+    background:linear-gradient(180deg, rgba(30,42,66,.92), rgba(12,18,32,.95));
+    border:2px solid rgba(232,193,112,.5); border-radius:12px; cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+    transition:transform .25s, box-shadow .3s, border-color .3s;
+  }
+  .back-btn:hover{ transform:translateX(-3px) scale(1.04); border-color:var(--glow);
+    box-shadow:0 8px 26px rgba(0,0,0,.6), 0 0 22px rgba(255,216,122,.35); }
+  .back-btn .arrow{ font-size:20px; line-height:1; }
+
+  /* ===================== SECRET BUTTON + PASSWORD MODAL ===================== */
+  .secret-top-btn{
+    position:absolute; top:18px; left:50%; transform:translateX(-50%);
+    z-index:6; cursor:pointer; white-space:nowrap;
+    padding:10px 22px; font-family:"Georgia",serif; font-size:clamp(12px,2vw,16px);
+    letter-spacing:.08em; color:#ffe9a8; text-transform:uppercase;
+    background:linear-gradient(180deg, rgba(60,40,80,.85), rgba(28,16,40,.92));
+    border:2px solid rgba(232,193,112,.55); border-radius:999px;
+    box-shadow:0 4px 18px rgba(0,0,0,.5), 0 0 16px rgba(255,216,122,.25);
+    transition:transform .25s cubic-bezier(.2,.9,.3,1.3), box-shadow .3s, border-color .3s;
+    animation:secretPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes secretPulse{ 0%,100%{box-shadow:0 4px 18px rgba(0,0,0,.5), 0 0 14px rgba(255,216,122,.25)} 50%{box-shadow:0 4px 18px rgba(0,0,0,.5), 0 0 26px rgba(255,216,122,.55)} }
+  .secret-top-btn:hover{
+    transform:translateX(-50%) scale(1.06) translateY(-2px);
+    border-color:var(--glow);
+    box-shadow:0 8px 26px rgba(0,0,0,.6), 0 0 30px rgba(255,216,122,.6);
+  }
+  .secret-top-btn:active{ transform:translateX(-50%) scale(.98); }
+
+  #pwModal{
+    position:fixed; inset:0; z-index:60; display:none;
+    align-items:center; justify-content:center;
+    background:rgba(4,6,12,.72); backdrop-filter:blur(6px);
+  }
+  #pwModal.open{ display:flex; animation:fadeBg .3s ease; }
+  @keyframes fadeBg{ from{opacity:0} to{opacity:1} }
+  .pw-card{
+    width:min(420px,90vw); padding:30px 28px 26px; text-align:center;
+    background:linear-gradient(160deg, rgba(30,42,66,.96), rgba(12,18,32,.98));
+    border:2px solid rgba(232,193,112,.5); border-radius:20px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+    color:var(--paper); animation:popCard .35s cubic-bezier(.2,1.1,.3,1);
+  }
+  @keyframes popCard{ from{opacity:0; transform:translateY(20px) scale(.95)} to{opacity:1; transform:none} }
+  .pw-icon{ font-size:40px; margin-bottom:6px; }
+  .pw-card h3{ font-family:"Georgia",serif; font-size:clamp(20px,4vw,26px); letter-spacing:.04em; }
+  .pw-sub{ margin:6px 0 18px; color:#aebbd2; font-size:14px; }
+  #pwInput{
+    width:100%; padding:14px 16px; font-size:18px; text-align:center;
+    font-family:"Georgia",serif; color:#fff; letter-spacing:.1em;
+    background:rgba(0,0,0,.35); border:2px solid rgba(232,193,112,.45);
+    border-radius:12px; outline:none; transition:border-color .25s, box-shadow .25s;
+  }
+  #pwInput:focus{ border-color:var(--glow); box-shadow:0 0 16px rgba(255,216,122,.3); }
+  .pw-error{
+    height:0; overflow:hidden; opacity:0; color:#ff8a8a; font-size:13px; margin-top:8px;
+    transition:opacity .25s, height .25s;
+  }
+  .pw-error.show{ height:18px; opacity:1; }
+  .pw-card.shake{ animation:shake .4s; }
+  @keyframes shake{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(9px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)} }
+  .pw-actions{ display:flex; gap:12px; margin-top:20px; }
+  .pw-btn{
+    flex:1; padding:13px 16px; cursor:pointer; border-radius:12px;
+    font-family:"Georgia",serif; font-size:16px; letter-spacing:.05em;
+    transition:transform .2s, box-shadow .3s, filter .2s;
+  }
+  .pw-cancel{ color:#cdd6e6; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); }
+  .pw-cancel:hover{ transform:translateY(-2px); background:rgba(255,255,255,.14); }
+  .pw-ok{ color:#1a1410; border:none; background:linear-gradient(180deg,var(--glow),var(--gold-deep)); font-weight:bold; box-shadow:0 0 18px rgba(255,216,122,.4); }
+  .pw-ok:hover{ transform:translateY(-2px); filter:brightness(1.08); }
+
+  /* secret reveal screen */
+  #secret{ z-index:40; }
+  #secret .deep-bg{ background:radial-gradient(1100px 800px at 50% 45%, #2a1c08 0%, #140d04 55%, #05040a 100%); }
+  .secret-card{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(620px,90vw); padding:40px 34px; text-align:center; z-index:3;
+    background:linear-gradient(160deg, rgba(60,42,14,.92), rgba(30,20,6,.95));
+    border:2px solid var(--gold); border-radius:24px;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 50px rgba(255,216,122,.2);
+    color:#ffe9a8; animation:popCard .5s cubic-bezier(.2,1.1,.3,1);
+  }
+  .secret-emoji{ font-size:64px; animation:floatTitle 3s ease-in-out infinite; }
+  .secret-card h2{
+    font-size:clamp(26px,6vw,52px); letter-spacing:.06em; margin:6px 0 14px;
+    background:linear-gradient(180deg,#fff8e6,var(--gold) 60%,var(--gold-deep));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .secret-card p{ font-size:clamp(15px,2.6vw,20px); line-height:1.6; color:#f0dcae; }
+  .secret-close{
+    margin-top:26px; padding:13px 26px; cursor:pointer;
+    font-family:"Georgia",serif; font-size:16px; letter-spacing:.08em; color:#1a1410;
+    background:linear-gradient(180deg,var(--glow),var(--gold-deep)); font-weight:bold;
+    border:none; border-radius:12px; box-shadow:0 0 20px rgba(255,216,122,.4);
+    transition:transform .2s, filter .2s;
+  }
+  .secret-close:hover{ transform:translateY(-2px) scale(1.03); filter:brightness(1.08); }
+
+  /* ===================== MINI-FILME: O QUARTO ===================== */
+  .room{ position:absolute; inset:0; overflow:hidden; }
+  .room-wall{ position:absolute; left:0; right:0; top:0; height:68%;
+    background:linear-gradient(180deg,#3a4673 0%, #2d3760 70%, #283255 100%);
+    background-image:
+      linear-gradient(180deg,#3a4673 0%, #2d3760 70%, #283255 100%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 38px, transparent 38px 76px); }
+  .room-floor{ position:absolute; left:0; right:0; bottom:0; height:32%; z-index:1;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 54px),
+      linear-gradient(180deg,#7a5132 0%, #5e3d24 60%, #4a2f1b 100%);
+    box-shadow:inset 0 7px 14px rgba(0,0,0,.35); }
+  /* window with rainy night */
+  .room-window{ position:absolute; left:7%; top:11%; width:clamp(120px,17vw,210px); height:clamp(90px,15vw,150px);
+    border:7px solid #6b4a2e; border-radius:4px; background:#1a2742; box-shadow:0 6px 18px rgba(0,0,0,.4); overflow:hidden; }
+  .win-glass{ position:absolute; inset:0; background:linear-gradient(180deg,#16233d,#24314f);
+    background-image:repeating-linear-gradient(108deg, rgba(150,180,220,.35) 0 1px, transparent 1px 11px);
+    animation:movieRain .5s linear infinite; }
+  @keyframes movieRain{ from{background-position:0 0} to{background-position:-42px 130px} }
+  .win-bar-v{ position:absolute; left:50%; top:0; bottom:0; width:5px; margin-left:-2px; background:#6b4a2e; }
+  .win-bar-h{ position:absolute; top:50%; left:0; right:0; height:5px; margin-top:-2px; background:#6b4a2e; }
+  /* bookshelf (tema leitura) */
+  .room-shelf{ position:absolute; right:9%; top:13%; width:clamp(120px,16vw,190px); height:30px;
+    background:#5a3d22; border-radius:2px; display:flex; align-items:flex-end; gap:4px; padding:0 8px 3px;
+    box-shadow:0 5px 0 #3a2616, 0 7px 14px rgba(0,0,0,.4); }
+  .room-shelf span{ flex:1; height:24px; border-radius:1px 1px 0 0; }
+  .room-shelf span:nth-child(odd){ height:27px; }
+  .room-poster{ position:absolute; right:14%; top:30%; width:54px; height:64px; font-size:30px;
+    display:flex; align-items:center; justify-content:center;
+    background:#dfe6ee; border:5px solid #2a2f45; border-radius:3px; box-shadow:0 5px 12px rgba(0,0,0,.4); }
+  /* bed */
+  .room-bed{ position:absolute; left:3%; bottom:30%; width:clamp(150px,22vw,260px); height:clamp(54px,8vw,86px); z-index:1;
+    background:#6b4636; border-radius:6px 6px 3px 3px; box-shadow:0 8px 14px rgba(0,0,0,.4); }
+  .bed-blanket{ position:absolute; right:0; top:18%; width:64%; height:82%; background:linear-gradient(180deg,#3f7fb0,#2f6090); border-radius:4px; }
+  .bed-pillow{ position:absolute; left:5%; top:6%; width:30%; height:55%; background:#ede6d2; border-radius:6px; }
+  /* door (right wall) that opens */
+  .room-door{ position:absolute; right:5%; bottom:32%; width:clamp(56px,8vw,82px); height:clamp(120px,21vw,180px);
+    z-index:1; perspective:520px; }
+  .door-hall{ position:absolute; inset:0; background:linear-gradient(180deg,#2a2012 0%, #120c06 100%);
+    border:4px solid #3a2616; box-shadow:inset 0 0 22px rgba(0,0,0,.8); }
+  .door-panel{ position:absolute; inset:0; transform-origin:left center; backface-visibility:hidden;
+    background:linear-gradient(90deg,#7a522f 0%, #6b4626 50%, #5a3a20 100%);
+    border:4px solid #3a2616; border-radius:0 2px 2px 0;
+    box-shadow:inset -6px 0 12px rgba(0,0,0,.3);
+    transition:transform .8s cubic-bezier(.4,.05,.2,1); }
+  .door-panel::after{ content:""; position:absolute; right:7px; top:50%; width:7px; height:7px; margin-top:-3px;
+    border-radius:50%; background:#e8c878; box-shadow:0 0 4px rgba(0,0,0,.5); }
+  .room-door.open .door-panel{ transform:rotateY(-118deg); }
+
+  .movie-vignette{ position:absolute; inset:0; pointer-events:none; z-index:4;
+    box-shadow:inset 0 0 200px 70px rgba(0,0,0,.7); }
+  .movie-alarm{ position:absolute; inset:0; pointer-events:none; z-index:4; opacity:0;
+    background:radial-gradient(circle at 50% 45%, transparent 35%, rgba(180,0,0,.6) 100%); transition:opacity .4s; }
+  .movie-alarm.on{ animation:alarmPulse .65s ease-in-out infinite; }
+  @keyframes alarmPulse{ 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  /* characters */
+  .movie-stage{ position:absolute; inset:0; z-index:2; }
+  .char{ position:absolute; bottom:30%; width:clamp(60px,11vw,96px);
+    image-rendering:pixelated; transform-origin:bottom center;
+    filter:drop-shadow(0 8px 5px rgba(0,0,0,.55)); transition:filter .3s;
+    animation:idleBreath 2.8s ease-in-out infinite; }
+  .char svg{ width:100%; height:auto; display:block; }
+  #ch-miguel{ left:24%; }
+  #ch-cranio{ left:43%; }
+  #ch-matilde{ left:82%; width:clamp(70px,13vw,116px); }
+  @keyframes idleBreath{ 0%,100%{transform:translateY(0) scaleY(1)} 50%{transform:translateY(-2px) scaleY(1.025)} }
+  .movie-stage.talking .char:not(.speaking){ filter:brightness(.5) drop-shadow(0 8px 5px rgba(0,0,0,.55)); }
+  /* speaking = lively talk bounce */
+  .char.speaking{ animation:talkBounce .32s ease-in-out infinite; z-index:3; }
+  @keyframes talkBounce{ 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-9px) scale(1.04)} }
+  /* Miguel's dramatic reveal */
+  .char.shock{ animation:shock .5s ease-out 2; }
+  @keyframes shock{ 0%{transform:translateY(0)} 25%{transform:translateY(-22px) scale(1.1) rotate(-4deg)} 55%{transform:translateY(0) scale(.96)} 75%{transform:translateY(-8px)} 100%{transform:translateY(0)} }
+  /* Crânio nervous trembling */
+  .char.nervous{ animation:nervous .12s steps(2,end) infinite; }
+  @keyframes nervous{ 0%{transform:translate(0,0)} 50%{transform:translate(-3px,1px) rotate(-1deg)} 100%{transform:translate(3px,-1px) rotate(1deg)} }
+  /* Tia Matilde: starts invisible in the doorway, walks in via the 'left' transition */
+  .char.tia{ opacity:0; transition:left .9s steps(7,end), opacity .5s ease; }
+
+  /* ===================== CRASH CUTSCENE ===================== */
+  /* whole-screen glitch applied to #app */
+  #app.crashing{ animation:screenGlitch .26s steps(3,end) 7; }
+  @keyframes screenGlitch{
+    0%  { transform:translate(0,0); filter:none; }
+    20% { transform:translate(-7px,3px); filter:hue-rotate(45deg) saturate(2.2); }
+    40% { transform:translate(6px,-4px) skewX(2deg); filter:invert(.12) contrast(1.4); }
+    60% { transform:translate(-4px,2px) skewX(-1.5deg); filter:hue-rotate(-40deg); }
+    80% { transform:translate(5px,3px); filter:saturate(.4) brightness(1.3); }
+    100%{ transform:translate(0,0); filter:none; }
+  }
+
+  #crash{ position:fixed; inset:0; z-index:90; display:none; overflow:hidden; background:#000; }
+  #crash.active{ display:block; animation:fadeBg .9s ease; }
+  .crash-black{ position:absolute; inset:0; background:#000; opacity:0; transition:opacity .4s ease; }
+
+  .crash-fx{ position:absolute; inset:0; pointer-events:none; opacity:0; z-index:2; }
+  .crash-fx.on{ opacity:1; }
+  .crash-scan{ position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.09) 0 2px, transparent 2px 5px);
+    mix-blend-mode:overlay; animation:scanMove .2s steps(2) infinite; }
+  @keyframes scanMove{ from{transform:translateY(0)} to{transform:translateY(5px)} }
+  .crash-bars{ position:absolute; inset:0; }
+  .crash-bars::before, .crash-bars::after{ content:""; position:absolute; left:-10%; right:-10%; mix-blend-mode:screen; }
+  .crash-bars::before{ height:22%; top:24%; background:linear-gradient(90deg, rgba(0,255,255,.55), rgba(255,0,255,.45)); animation:barJump .18s steps(2,end) infinite; }
+  .crash-bars::after{ height:14%; top:62%; background:linear-gradient(90deg, rgba(255,40,40,.55), rgba(255,255,0,.4)); animation:barJump2 .15s steps(2,end) infinite; }
+  @keyframes barJump{ 0%{transform:translateX(0)} 50%{transform:translateX(-34px)} 100%{transform:translateX(22px)} }
+  @keyframes barJump2{ 0%{transform:translateX(12px)} 50%{transform:translateX(-28px)} 100%{transform:translateX(0)} }
+
+  .crash-redtext{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:92%; text-align:center; z-index:4; color:#ff1e1e;
+    font-family:"Courier New",monospace; font-weight:bold;
+    font-size:clamp(24px,5.6vw,54px); line-height:1.35; letter-spacing:.03em;
+    text-shadow:0 0 14px rgba(255,0,0,.7), 0 0 2px rgba(255,255,255,.4);
+    opacity:0; pointer-events:none;
+  }
+  .crash-redtext.show{ opacity:1; animation:redTremble .1s steps(2,end) infinite; }
+  @keyframes redTremble{
+    0%  { transform:translate(-50%,-50%); }
+    25% { transform:translate(calc(-50% - 3px), calc(-50% + 2px)); }
+    50% { transform:translate(calc(-50% + 3px), calc(-50% - 2px)); }
+    75% { transform:translate(calc(-50% - 2px), calc(-50% - 2px)); }
+    100%{ transform:translate(calc(-50% + 2px), calc(-50% + 2px)); }
+  }
+
+  /* Undertale-style dialogue box */
+  .crash-dialog{
+    position:absolute; left:50%; bottom:7%; transform:translateX(-50%) translateY(20px);
+    width:min(720px,92vw); z-index:4;
+    background:#000; border:5px solid #fff; border-radius:4px;
+    display:flex; gap:18px; align-items:center; padding:18px 22px;
+    opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s ease;
+    box-shadow:0 0 0 3px #000, 0 20px 60px rgba(0,0,0,.6);
+  }
+  .crash-dialog.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .crash-dialog.no-portrait .dlg-portrait{ display:none; }
+  .dlg-portrait{ flex:0 0 auto; width:92px; height:92px; border:3px solid #fff; border-radius:4px; background:#0a0a0a; overflow:hidden; }
+  .dlg-portrait svg{ width:100%; height:100%; display:block; }
+  .dlg-body{ flex:1; }
+  .dlg-name{ font-family:"Courier New",monospace; color:#ffd84a; font-size:clamp(13px,2.4vw,18px); margin-bottom:6px; letter-spacing:.06em; }
+  .dlg-text{ font-family:"Courier New",monospace; color:#fff; font-size:clamp(16px,3vw,24px); line-height:1.45; min-height:1.4em; }
+  .dlg-text::after{ content:"_"; animation:caret .6s steps(1) infinite; opacity:.8; }
+  @keyframes caret{ 50%{opacity:0} }
+
+  /* utility */
+  .clickable{ cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== START SCREEN ===================== -->
+  <section id="start" class="layer active">
+    <div class="deep-bg"></div>
+    <div class="dust"></div>
+    <canvas id="books"></canvas>
+    <div class="vignette"></div>
+
+    <button class="secret-top-btn" id="btnSecret">🥔 Botão secreto, ultra secreto</button>
+
+    <div class="title-wrap">
+      <div class="game-title">Leitura &amp; Criação</div>
+      <div class="game-sub">um trabalho sobre um livro</div>
+    </div>
+
+    <div class="menu">
+      <button class="btn" id="btnContinue"><span class="lbl">Continuar</span></button>
+      <button class="btn btn-exit" id="btnExit"><span class="lbl">Sair</span></button>
+    </div>
+
+    <div class="hint">passe o mouse nos botões</div>
+  </section>
+
+  <!-- ===================== CUTSCENE ===================== -->
+  <section id="cutscene" class="layer">
+    <div class="stage">
+      <div class="book">
+        <div class="book-base"></div>
+        <div class="pages-stack-left"></div>
+        <div class="pages-stack"></div>
+
+        <div class="flip f6"></div>
+        <div class="flip f5"></div>
+        <div class="flip f4"></div>
+        <div class="flip f3"></div>
+        <div class="flip f2"></div>
+        <div class="flip f1"></div>
+
+        <div class="cover cover-left"><div class="emblem"></div></div>
+        <div class="cover cover-right"><div class="emblem"></div></div>
+
+        <div class="sparks" id="sparks"></div>
+      </div>
+    </div>
+    <div class="whiteflash"></div>
+  </section>
+
+  <!-- ===================== WHITE + TEXT ===================== -->
+  <section id="white" class="layer">
+    <div id="loading"><span class="load-text">Carregando</span><span class="load-dots"></span></div>
+    <div class="phrase phrase-1" id="p1">ESSE É O MELHOR TRABALHO DEEE</div>
+    <div class="phrase phrase-2" id="p2">Leitura e criaçãooooo</div>
+
+    <div id="credits">
+      <div class="credits-label">Feito por</div>
+      <div class="credits-line"></div>
+      <div class="credits-names"><b>Bernardo · João · Daniel<br>Gael · Henrique · Murilo</b></div>
+    </div>
+  </section>
+
+  <!-- ===================== HUB / MAIN MENU ===================== -->
+  <section id="hub" class="layer">
+    <div class="deep-bg"></div>
+    <div class="dust"></div>
+    <canvas id="hubBooks"></canvas>
+    <div class="vignette"></div>
+
+    <button class="back-btn" id="btnHubBack"><span class="arrow">←</span> Voltar ao início</button>
+
+    <div class="hub-head">
+      <div class="credits-mini"><small>Feito por</small>Bernardo · João · Daniel · Gael · Henrique · Murilo</div>
+    </div>
+
+    <div class="hub-title">Menu Principal</div>
+
+    <div class="hub-grid" id="hubGrid">
+      <button class="hub-btn" data-sec="resumo"><span class="num">1</span><span class="txt">Resumo breve do livro</span></button>
+      <button class="hub-btn" data-sec="personagens"><span class="num">2</span><span class="txt">Personagens</span></button>
+      <button class="hub-btn" data-sec="autor"><span class="num">3</span><span class="txt">Sobre o Autor</span></button>
+      <button class="hub-btn" data-sec="opiniao"><span class="num">4</span><span class="txt">O que achamos sobre o livro</span></button>
+      <button class="hub-btn" data-sec="notas"><span class="num">5</span><span class="txt">Nota de todos os participantes</span></button>
+      <button class="hub-btn" data-sec="sobre"><span class="num">6</span><span class="txt">Sobre o livro</span></button>
+    </div>
+  </section>
+
+  <!-- ===================== CONTENT SECTION ===================== -->
+  <section id="section" class="layer">
+    <div class="deep-bg"></div>
+    <div class="dust"></div>
+    <canvas id="secBooks"></canvas>
+    <div class="vignette"></div>
+
+    <button class="back-btn" id="btnBack"><span class="arrow">←</span> Voltar</button>
+    <div class="sheet" id="sheet"><!-- preenchido via JS --></div>
+  </section>
+
+  <!-- ===================== PASSWORD MODAL ===================== -->
+  <div id="pwModal">
+    <div class="pw-card">
+      <div class="pw-icon">🔒</div>
+      <h3>Acesso ultra secreto</h3>
+      <p class="pw-sub">Digite a senha para continuar:</p>
+      <input id="pwInput" type="password" placeholder="Senha..." autocomplete="off" spellcheck="false" />
+      <div class="pw-error" id="pwError">Senha incorreta! Tente de novo.</div>
+      <div class="pw-actions">
+        <button class="pw-btn pw-cancel" id="pwCancel">Cancelar</button>
+        <button class="pw-btn pw-ok" id="pwOk">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECRET "MODO BATATA" ===================== -->
+  <section id="secret" class="layer">
+    <div class="deep-bg"></div>
+    <canvas id="secretBooks"></canvas>
+    <div class="vignette"></div>
+    <div class="secret-card">
+      <div class="secret-emoji">🥔</div>
+      <h2>MODO BATATA ATIVADO</h2>
+      <p>Parabéns! Você descobriu o botão ultra secreto.<br>Aqui é território das batatas. 🥔🥔🥔</p>
+      <button class="secret-close" id="secretClose">← Voltar ao início</button>
+    </div>
+  </section>
+
+  <!-- ===================== MINI-FILME: O QUARTO (após senha certa) ===================== -->
+  <div id="crash">
+    <div class="room">
+      <div class="room-wall"></div>
+      <div class="room-window"><div class="win-glass"></div><div class="win-bar-v"></div><div class="win-bar-h"></div></div>
+      <div class="room-shelf">
+        <span style="background:#c0392b"></span><span style="background:#2f7d4f"></span><span style="background:#e8c020"></span>
+        <span style="background:#2f6fc8"></span><span style="background:#8b46c0"></span><span style="background:#d9d2c2"></span>
+      </div>
+      <div class="room-poster">📖</div>
+      <div class="room-floor"></div>
+      <div class="room-bed"><div class="bed-pillow"></div><div class="bed-blanket"></div></div>
+      <div class="room-door" id="roomDoor"><div class="door-hall"></div><div class="door-panel"></div></div>
+      <div class="movie-stage" id="movieStage">
+        <div class="char" id="ch-miguel"></div>
+        <div class="char" id="ch-cranio"></div>
+        <div class="char tia" id="ch-matilde"></div>
+      </div>
+      <div class="movie-vignette"></div>
+      <div class="movie-alarm" id="movieAlarm"></div>
+    </div>
+    <div class="crash-redtext" id="crashRed">TEMOS QUE FUGIR!<br>RÁPIDO!</div>
+    <div class="crash-dialog" id="crashDialog">
+      <div class="dlg-portrait" id="dlgPortrait"></div>
+      <div class="dlg-body">
+        <div class="dlg-name" id="dlgName"></div>
+        <div class="dlg-text" id="dlgText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- exit overlay -->
+  <div id="bye">até a próxima…</div>
+
+</div>
+
+<script>
+/* ============================================================
+   1) ANIMATED FIELD — reusable canvas (flying books + fun items)
+      depth via size/speed, soft parallax, gentle rotation
+   ============================================================ */
+
+// global pointer for parallax (-1 .. 1)
+const pointer = { x:0, y:0 };
+window.addEventListener('pointermove', e=>{
+  pointer.x = (e.clientX / window.innerWidth  - 0.5) * 2;
+  pointer.y = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function createField(canvasId, opts){
+  opts = opts || {};
+  const withFun = !!opts.fun;
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const DPR = window.devicePixelRatio || 1;
+  let W, H, items = [];
+
+  function resize(){
+    W = canvas.width  = Math.round(window.innerWidth  * DPR);
+    H = canvas.height = Math.round(window.innerHeight * DPR);
+    canvas.style.width  = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const palette = ['#c8542f','#2f6fc8','#d6a93a','#3aa86b','#8b46c0','#c83a6f','#d9d2c2','#46748b'];
+  const funKinds = ['potato','ball','67'];
+
+  function makeItem(initial){
+    const depth = Math.random();                 // 0 far → 1 near
+    // ~18% fun items when enabled (books are the main focus)
+    const isFun = withFun && Math.random() < 0.18;
+    const kind = isFun ? funKinds[(Math.random()*funKinds.length)|0] : 'book';
+    const baseScale = (kind==='book') ? (0.4 + depth*1.4) : (0.55 + depth*1.7);
+    const w = 26 * baseScale, h = 36 * baseScale;
+    return {
+      kind, depth,
+      x: initial ? Math.random()*W : -w*DPR - Math.random()*200,
+      y: Math.random()*H,
+      w: w*DPR, h: h*DPR,
+      size: (30 + depth*40) * DPR,               // for fun items (font/radius)
+      sp: ((kind==='book' ? 0.6 : 0.35) + depth*(kind==='book'?2.6:1.7)) * DPR,
+      rot: (Math.random()-0.5)*0.6,
+      vr: (Math.random()-0.5)*(kind==='book'?0.01:0.018),
+      color: palette[(Math.random()*palette.length)|0],
+      alpha: 0.32 + depth*0.6,
+      bob: Math.random()*Math.PI*2,
+      bobSp: 0.008 + Math.random()*0.02,
+      bobAmp: (4 + depth*12)*DPR
+    };
+  }
+
+  function init(){
+    items = [];
+    const count = Math.min(110, Math.floor(window.innerWidth/11));
+    for(let i=0;i<count;i++) items.push(makeItem(true));
+  }
+  init();
+  window.addEventListener('resize', init);
+
+  function drawBook(b){
+    const w=b.w, h=b.h;
+    ctx.fillStyle = b.color;
+    roundRect(ctx, -w/2, -h/2, w, h, 3*DPR); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillRect(-w/2, -h/2, w*0.18, h);
+    ctx.fillStyle = '#f3ead4';
+    ctx.fillRect(w/2 - w*0.12, -h/2 + h*0.06, w*0.12, h*0.88);
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1.4*DPR;
+    ctx.beginPath(); ctx.moveTo(-w/2, -h*0.12); ctx.lineTo(w/2, -h*0.12); ctx.stroke();
+  }
+
+  function drawPotato(b){
+    const r=b.size;
+    ctx.fillStyle='#c79a5b';
+    ctx.beginPath();
+    ctx.ellipse(0,0,r*0.62,r*0.44,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.18)';
+    ctx.beginPath(); ctx.ellipse(-r*0.18,-r*0.14,r*0.2,r*0.12,0,0,Math.PI*2); ctx.fill();
+    // little eyes/spots
+    ctx.fillStyle='#8a6534';
+    [[0.18,-0.05],[ -0.05,0.12],[0.3,0.14]].forEach(p=>{
+      ctx.beginPath(); ctx.arc(p[0]*r,p[1]*r,r*0.04,0,Math.PI*2); ctx.fill();
+    });
+  }
+
+  function drawBall(b){
+    const r=b.size*0.5;
+    ctx.fillStyle='#fafafa';
+    ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.lineWidth=Math.max(1,r*0.06);
+    ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.stroke();
+    // central pentagon
+    ctx.fillStyle='#1c1c1c';
+    ctx.beginPath();
+    for(let i=0;i<5;i++){
+      const a=-Math.PI/2 + i*2*Math.PI/5;
+      const px=Math.cos(a)*r*0.34, py=Math.sin(a)*r*0.34;
+      i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+    }
+    ctx.closePath(); ctx.fill();
+    // spokes
+    ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=Math.max(1,r*0.05);
+    for(let i=0;i<5;i++){
+      const a=-Math.PI/2 + i*2*Math.PI/5;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*0.34,Math.sin(a)*r*0.34);
+      ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r); ctx.stroke();
+    }
+  }
+
+  function draw67(b){
+    const s=b.size*1.05;
+    ctx.font='bold '+s+'px Georgia, serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(0,0,0,0.35)';
+    ctx.fillText('67', 2*DPR, 2*DPR);
+    const g=ctx.createLinearGradient(0,-s/2,0,s/2);
+    g.addColorStop(0,'#ffe9a8'); g.addColorStop(1,'#c98a23');
+    ctx.fillStyle=g;
+    ctx.fillText('67', 0, 0);
+  }
+
+  function loop(){
+    // self-heal: if the canvas was sized while the viewport was wrong
+    // (e.g. created inside a hidden layer), fix it as soon as we have a real width
+    if(window.innerWidth > 2){
+      const nw = Math.round(window.innerWidth * DPR), nh = Math.round(window.innerHeight * DPR);
+      if(canvas.width !== nw || canvas.height !== nh){ resize(); init(); }
+    }
+    ctx.clearRect(0,0,W,H);
+    for(const b of items){
+      b.x += b.sp;
+      b.rot += b.vr;
+      b.bob += b.bobSp;
+      if(b.x - Math.max(b.w,b.size) > W){
+        Object.assign(b, makeItem(false));
+        b.x = -Math.max(b.w,b.size) - Math.random()*120;
+      }
+      // parallax: nearer items shift more with the pointer
+      const px = pointer.x * b.depth * 26 * DPR;
+      const py = pointer.y * b.depth * 18 * DPR;
+      ctx.save();
+      ctx.globalAlpha = b.alpha;
+      ctx.translate(b.x + px, b.y + py + Math.sin(b.bob)*b.bobAmp);
+      ctx.rotate(b.rot);
+      if(b.kind==='book') drawBook(b);
+      else if(b.kind==='potato') drawPotato(b);
+      else if(b.kind==='ball') drawBall(b);
+      else if(b.kind==='67') draw67(b);
+      ctx.restore();
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// every background: flying books + fun elements (potatoes, "67", soccer balls)
+createField('books',    { fun:true });
+createField('hubBooks', { fun:true });
+createField('secBooks', { fun:true });
+createField('secretBooks', { fun:true });
+
+/* ============================================================
+   2) SCENE FLOW
+   ============================================================ */
+const startEl    = document.getElementById('start');
+const cutsceneEl = document.getElementById('cutscene');
+const whiteEl    = document.getElementById('white');
+const byeEl      = document.getElementById('bye');
+
+function show(el){ document.querySelectorAll('.layer').forEach(l=>l.classList.remove('active')); el.classList.add('active'); }
+
+// golden sparks in cutscene
+(function(){
+  const wrap = document.getElementById('sparks');
+  for(let i=0;i<14;i++){
+    const s = document.createElement('div');
+    s.className='spark';
+    s.style.left = (10 + Math.random()*80) + '%';
+    s.style.animationDelay = (Math.random()*2.4) + 's';
+    s.style.animationDuration = (2 + Math.random()*1.6) + 's';
+    wrap.appendChild(s);
+  }
+})();
+
+let started = false;
+document.getElementById('btnContinue').addEventListener('click', ()=>{
+  if(started) return; started = true;
+  stopGlitch();            // stop the title glitch when leaving the start screen
+  runCutscene();
+});
+
+document.getElementById('btnExit').addEventListener('click', ()=>{
+  byeEl.style.display = 'flex';
+  requestAnimationFrame(()=> byeEl.style.opacity = '1');
+});
+
+/* ---- secret button + password modal (correct password: "Batata") ---- */
+const pwModal = document.getElementById('pwModal');
+const pwInput = document.getElementById('pwInput');
+const pwError = document.getElementById('pwError');
+const pwCard  = pwModal.querySelector('.pw-card');
+
+function openPwModal(){
+  pwInput.value = '';
+  pwError.classList.remove('show');
+  pwModal.classList.add('open');
+  setTimeout(()=> pwInput.focus(), 50);
+}
+function closePwModal(){ pwModal.classList.remove('open'); }
+
+function checkPassword(){
+  if(pwInput.value.trim().toLowerCase() === 'batata'){
+    closePwModal();
+    runCrashSequence();                            // fake crash cutscene
+  } else {
+    pwError.classList.add('show');
+    pwCard.classList.remove('shake'); void pwCard.offsetWidth; pwCard.classList.add('shake');
+    pwInput.value = ''; pwInput.focus();
+  }
+}
+
+document.getElementById('btnSecret').addEventListener('click', openPwModal);
+document.getElementById('pwOk').addEventListener('click', checkPassword);
+document.getElementById('pwCancel').addEventListener('click', closePwModal);
+pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') checkPassword(); if(e.key==='Escape') closePwModal(); });
+pwModal.addEventListener('click', e=>{ if(e.target===pwModal) closePwModal(); });
+document.getElementById('secretClose').addEventListener('click', ()=>{
+  show(document.getElementById('start'));
+  startTitleGlitch();
+});
+
+/* ---- crash cutscene played when the password is correct ---- */
+let crashTimers = [];
+let typingInterval = null;
+function typeText(el, text, speed, done){
+  clearInterval(typingInterval);     // never let two lines type at once
+  el.textContent = ''; let i = 0;
+  typingInterval = setInterval(()=>{
+    el.textContent += text.charAt(i++);
+    if(i >= text.length){ clearInterval(typingInterval); if(done) done(); }
+  }, speed);
+  crashTimers.push(()=>clearInterval(typingInterval));
+}
+/* ---- pixel-art sprites for the mini-movie (original chibi characters) ---- */
+const CHAR = {
+  miguel:`<svg viewBox="0 0 40 64" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+    <rect x="12" y="58" width="8" height="4" fill="#3a2a1a"/><rect x="20" y="58" width="8" height="4" fill="#3a2a1a"/>
+    <rect x="12" y="61" width="8" height="2" fill="#222"/><rect x="20" y="61" width="8" height="2" fill="#222"/>
+    <rect x="13" y="46" width="7" height="13" fill="#3b5170"/><rect x="20" y="46" width="7" height="13" fill="#32486a"/><rect x="13" y="46" width="14" height="2" fill="#2a3c5a"/>
+    <rect x="10" y="28" width="20" height="19" fill="#e8c020"/><rect x="10" y="28" width="20" height="3" fill="#f4d84a"/><rect x="10" y="43" width="20" height="4" fill="#cda014"/>
+    <rect x="5" y="29" width="6" height="13" fill="#e8c020"/><rect x="29" y="29" width="6" height="13" fill="#cda014"/>
+    <rect x="5" y="40" width="6" height="4" fill="#f0c79a"/><rect x="29" y="40" width="6" height="4" fill="#f0c79a"/>
+    <rect x="17" y="25" width="6" height="4" fill="#e0b486"/>
+    <rect x="12" y="9" width="16" height="17" fill="#f0c79a"/><rect x="12" y="22" width="16" height="4" fill="#e6bd8e"/>
+    <rect x="11" y="5" width="18" height="7" fill="#5a3a22"/><rect x="11" y="5" width="18" height="2" fill="#6e4a2c"/>
+    <rect x="11" y="9" width="3" height="6" fill="#5a3a22"/><rect x="26" y="9" width="3" height="6" fill="#5a3a22"/><rect x="14" y="11" width="5" height="2" fill="#4a2e1a"/>
+    <rect x="14" y="14" width="4" height="1" fill="#4a2e1a"/><rect x="22" y="14" width="4" height="1" fill="#4a2e1a"/>
+    <rect x="14" y="16" width="3" height="3" fill="#fff"/><rect x="23" y="16" width="3" height="3" fill="#fff"/>
+    <rect x="15" y="16" width="2" height="3" fill="#3a2a1a"/><rect x="24" y="16" width="2" height="3" fill="#3a2a1a"/>
+    <rect x="19" y="19" width="2" height="2" fill="#e0a878"/>
+    <rect x="16" y="22" width="8" height="3" fill="#7a2020"/><rect x="17" y="23" width="6" height="1" fill="#c0504a"/></svg>`,
+  cranio:`<svg viewBox="0 0 40 64" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+    <rect x="12" y="58" width="8" height="4" fill="#2a2a2a"/><rect x="20" y="58" width="8" height="4" fill="#2a2a2a"/>
+    <rect x="13" y="46" width="7" height="13" fill="#4a5b6e"/><rect x="20" y="46" width="7" height="13" fill="#3e4f62"/><rect x="13" y="46" width="14" height="2" fill="#36455a"/>
+    <rect x="10" y="28" width="20" height="19" fill="#cfd8e2"/><rect x="10" y="28" width="20" height="3" fill="#e6edf4"/><rect x="10" y="43" width="20" height="4" fill="#b3bfcc"/>
+    <rect x="5" y="29" width="6" height="13" fill="#cfd8e2"/><rect x="29" y="29" width="6" height="13" fill="#b3bfcc"/>
+    <rect x="5" y="40" width="6" height="4" fill="#f0c79a"/><rect x="29" y="40" width="6" height="4" fill="#f0c79a"/>
+    <rect x="17" y="25" width="6" height="4" fill="#e0b486"/>
+    <rect x="12" y="9" width="16" height="17" fill="#f0c79a"/><rect x="12" y="22" width="16" height="4" fill="#e6bd8e"/>
+    <rect x="11" y="5" width="18" height="6" fill="#23272e"/><rect x="11" y="9" width="3" height="4" fill="#23272e"/><rect x="26" y="9" width="3" height="4" fill="#23272e"/><rect x="13" y="10" width="14" height="1" fill="#3a4049"/>
+    <rect x="13" y="15" width="6" height="5" fill="#bfe6ff"/><rect x="21" y="15" width="6" height="5" fill="#bfe6ff"/>
+    <rect x="13" y="15" width="6" height="1" fill="#2a2f3a"/><rect x="13" y="19" width="6" height="1" fill="#2a2f3a"/><rect x="21" y="15" width="6" height="1" fill="#2a2f3a"/><rect x="21" y="19" width="6" height="1" fill="#2a2f3a"/>
+    <rect x="13" y="15" width="1" height="5" fill="#2a2f3a"/><rect x="18" y="15" width="1" height="5" fill="#2a2f3a"/><rect x="21" y="15" width="1" height="5" fill="#2a2f3a"/><rect x="26" y="15" width="1" height="5" fill="#2a2f3a"/><rect x="19" y="16" width="2" height="1" fill="#2a2f3a"/>
+    <rect x="15" y="16" width="2" height="3" fill="#2a2a2a"/><rect x="23" y="16" width="2" height="3" fill="#2a2a2a"/>
+    <rect x="18" y="22" width="4" height="2" fill="#7a3030"/></svg>`,
+  matilde:`<svg viewBox="0 0 40 72" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+    <rect x="14" y="64" width="5" height="5" fill="#2a2a2a"/><rect x="21" y="64" width="5" height="5" fill="#2a2a2a"/>
+    <rect x="13" y="34" width="14" height="8" fill="#6a3d7a"/><rect x="10" y="42" width="20" height="10" fill="#6a3d7a"/><rect x="7" y="52" width="26" height="13" fill="#5a3268"/><rect x="7" y="52" width="26" height="2" fill="#4a2a58"/>
+    <rect x="14" y="40" width="12" height="22" fill="#e8e2d2"/><rect x="16" y="36" width="8" height="5" fill="#e8e2d2"/><rect x="14" y="40" width="12" height="1" fill="#cfc7b2"/>
+    <rect x="6" y="35" width="5" height="14" fill="#6a3d7a"/><rect x="29" y="35" width="5" height="14" fill="#6a3d7a"/>
+    <rect x="6" y="47" width="5" height="4" fill="#f2c9a0"/><rect x="29" y="47" width="5" height="4" fill="#f2c9a0"/>
+    <rect x="17" y="30" width="6" height="4" fill="#f2c9a0"/><rect x="15" y="33" width="10" height="1" fill="#fff"/>
+    <rect x="13" y="13" width="14" height="16" fill="#f2c9a0"/><rect x="13" y="25" width="14" height="4" fill="#e6bd8e"/>
+    <rect x="12" y="9" width="16" height="7" fill="#8a6f57"/><rect x="12" y="13" width="2" height="7" fill="#8a6f57"/><rect x="26" y="13" width="2" height="7" fill="#8a6f57"/><rect x="12" y="9" width="16" height="2" fill="#a5907a"/>
+    <rect x="16" y="3" width="8" height="7" fill="#8a6f57"/><rect x="17" y="4" width="6" height="2" fill="#a5907a"/><rect x="13" y="11" width="3" height="3" fill="#cabba6"/>
+    <rect x="15" y="16" width="3" height="1" fill="#6b513b"/><rect x="22" y="16" width="3" height="1" fill="#6b513b"/>
+    <rect x="15" y="18" width="3" height="3" fill="#fff"/><rect x="22" y="18" width="3" height="3" fill="#fff"/>
+    <rect x="16" y="18" width="2" height="3" fill="#4a3020"/><rect x="23" y="18" width="2" height="3" fill="#4a3020"/>
+    <rect x="16" y="24" width="8" height="2" fill="#b83a3a"/>
+    <rect x="12" y="21" width="1" height="3" fill="#fff"/><rect x="27" y="21" width="1" height="3" fill="#fff"/></svg>`
+};
+
+function runCrashSequence(){
+  crashTimers.forEach(fn=>fn()); crashTimers = [];
+  const crash   = document.getElementById('crash');
+  const stage   = document.getElementById('movieStage');
+  const alarm   = document.getElementById('movieAlarm');
+  const red     = document.getElementById('crashRed');
+  const dlg     = document.getElementById('crashDialog');
+  const dlgText = document.getElementById('dlgText');
+  const dlgName = document.getElementById('dlgName');
+  const dlgPort = document.getElementById('dlgPortrait');
+  const tia     = document.getElementById('ch-matilde');
+  const door    = document.getElementById('roomDoor');
+
+  // build the pixel cast (only Miguel, Crânio and Tia Matilde)
+  document.getElementById('ch-miguel').innerHTML = CHAR.miguel;
+  document.getElementById('ch-cranio').innerHTML = CHAR.cranio;
+  tia.innerHTML = CHAR.matilde;
+
+  // reset everything
+  red.classList.remove('show');
+  dlg.classList.remove('show'); alarm.classList.remove('on');
+  stage.classList.remove('talking');
+  door.classList.remove('open');
+  tia.style.left = '82%'; tia.style.opacity = '0';
+  document.querySelectorAll('.char').forEach(c=>c.classList.remove('speaking','shock','nervous'));
+  dlgText.textContent = '';
+  crash.classList.add('active');
+
+  const schedule = (ms, fn)=>{ const id=setTimeout(fn, ms); crashTimers.push(()=>clearTimeout(id)); };
+  const gesture  = (id, cls, dur)=>{ const el=document.getElementById(id); if(!el) return; el.classList.add(cls); schedule(dur, ()=>el.classList.remove(cls)); };
+
+  // one dialogue line: highlight speaker, type it, hold for reading, then advance
+  function stepLine(o, done){
+    if(o.before) o.before();
+    if(o.text){
+      stage.classList.add('talking');
+      document.querySelectorAll('.char').forEach(c=>c.classList.remove('speaking'));
+      const el=document.getElementById(o.char); if(el) el.classList.add('speaking');
+      dlgPort.innerHTML = CHAR[o.portrait]; dlgName.textContent = o.name;
+      dlg.classList.add('show');
+      typeText(dlgText, o.text, o.speed||48, ()=>{
+        schedule(o.hold||2600, ()=>{ if(o.after) o.after(); done(); });
+      });
+    } else {
+      schedule(o.wait||800, ()=>{ if(o.after) o.after(); done(); });
+    }
+  }
+  function runQueue(list, i, onEnd){ i=i||0; if(i>=list.length){ if(onEnd) onEnd(); return; } stepLine(list[i], ()=>runQueue(list, i+1, onEnd)); }
+
+  const lines = [
+    { wait:1300 },  // fade in + settle
+    { char:'ch-miguel', portrait:'miguel', name:'Miguel', text:'CRÂNIO! Eu descobri tudo...', speed:52, hold:1500,
+      before:()=> gesture('ch-miguel','shock',1000) },
+    { char:'ch-miguel', portrait:'miguel', name:'Miguel', text:'O ENTE é a TIA MATIL—', speed:62, hold:450,
+      before:()=> gesture('ch-miguel','shock',900) },
+    { wait:250, before:()=>{ door.classList.add('open'); } },                       // a porta escancara
+    { wait:950, before:()=>{ tia.style.left='62%'; tia.style.opacity='1'; } },      // tia entra pela porta
+    { char:'ch-matilde', portrait:'matilde', name:'Tia Matilde', text:'O café está pronto, meninos!', speed:54, hold:2400 },
+    { char:'ch-matilde', portrait:'matilde', name:'Tia Matilde', text:'...E quem é esse tal de "Ente"?', speed:56, hold:2700 },
+    { char:'ch-cranio', portrait:'cranio', name:'Crânio', text:'N-ninguém, tia! Já vamos descer.', speed:52, hold:2700,
+      before:()=> document.getElementById('ch-cranio').classList.add('nervous'),
+      after:()=> document.getElementById('ch-cranio').classList.remove('nervous') },
+    { char:'ch-matilde', portrait:'matilde', name:'Tia Matilde', text:'Hmm... OK, então.', speed:60, hold:1800,
+      after:()=>{ tia.style.left='92%'; tia.style.opacity='0'; } },                 // tia vai embora
+    { wait:1100, before:()=>{ door.classList.remove('open'); } },                   // porta fecha
+    { wait:200, before:()=>{
+        dlg.classList.remove('show'); stage.classList.remove('talking');
+        document.querySelectorAll('.char').forEach(c=>c.classList.remove('speaking'));
+        alarm.classList.add('on'); red.classList.add('show');
+      } },
+    { wait:3600 },  // segura o alarme vermelho
+  ];
+
+  runQueue(lines, 0, ()=>{
+    red.classList.remove('show'); alarm.classList.remove('on');
+    crash.classList.remove('active');
+    show(document.getElementById('start'));
+    startTitleGlitch();
+  });
+}
+
+function runCutscene(){
+  show(cutsceneEl);
+  // force reflow then start CSS animations
+  void cutsceneEl.offsetWidth;
+  cutsceneEl.classList.add('run');
+
+  // total cutscene ~5s; white flash finishes around 5.1s
+  setTimeout(goWhite, 5200);
+}
+
+/* ---- glitch: the intro TITLE turns into "BATATA" for 3s, every 5s ---- */
+const ORIG_TITLE = 'Leitura & Criação';
+let glitchTimer = null;
+let glitchRestore = null;
+
+function glitchTitle(){
+  const t = document.querySelector('.game-title');
+  if(!t) return;
+  t.textContent = 'batata';
+  t.setAttribute('data-text', 'batata');
+  t.classList.add('glitching');
+  clearTimeout(glitchRestore);
+  glitchRestore = setTimeout(()=>{
+    t.classList.remove('glitching');
+    t.textContent = ORIG_TITLE;
+    t.setAttribute('data-text', ORIG_TITLE);
+  }, 3000);   // stays "batata" for 3 seconds
+}
+
+function startTitleGlitch(){
+  stopGlitch();
+  const t = document.querySelector('.game-title');
+  if(t) t.setAttribute('data-text', ORIG_TITLE);
+  glitchTimer = setInterval(glitchTitle, 5000);  // every 5 seconds
+}
+
+function stopGlitch(){
+  clearInterval(glitchTimer); glitchTimer = null;
+  clearTimeout(glitchRestore); glitchRestore = null;
+  const t = document.querySelector('.game-title');
+  if(t){
+    t.classList.remove('glitching');
+    t.textContent = ORIG_TITLE;
+    t.setAttribute('data-text', ORIG_TITLE);
+  }
+}
+
+// kick off the title glitch on the start screen
+startTitleGlitch();
+
+function goWhite(){
+  show(whiteEl);          // already pure white background
+  const loading = document.getElementById('loading');
+  const showLoading = ()=>{ loading.classList.remove('hide'); loading.classList.add('show'); };
+  const hideLoading = ()=>{ loading.classList.remove('show'); loading.classList.add('hide'); };
+
+  // ---- WHITE PART #1: show "Carregando..." until the first phrase falls ----
+  showLoading();
+  setTimeout(hideLoading, 2700);
+
+  // 3s of white, then phrase 1
+  setTimeout(()=>{ document.getElementById('p1').classList.add('drop'); }, 3000);
+  // phrase 1 lands ~1.5s later → then phrase 2
+  setTimeout(()=>{ document.getElementById('p2').classList.add('drop'); }, 3000 + 1500);
+
+  // both stay visible a few seconds → fade out
+  const tFade = 3000 + 1500 + 1400 + 3200;            // ~9100ms
+  setTimeout(()=>{
+    document.getElementById('p1').classList.add('fade-out');
+    document.getElementById('p2').classList.add('fade-out');
+  }, tFade);
+
+  // ---- WHITE PART #2: screen is blank white again → show "Carregando..." ----
+  const tWhite2 = tFade + 1700;                       // phrases have faded out
+  setTimeout(showLoading, tWhite2);
+  const tWhite2End = tWhite2 + 2400;
+  setTimeout(hideLoading, tWhite2End);
+
+  // credits appear after the second white part
+  const tCredits = tWhite2End + 900;
+  setTimeout(()=>{ document.getElementById('credits').classList.add('show'); }, tCredits);
+
+  // ~3s after credits → slide them up, then reveal the hub menu
+  setTimeout(goHub, tCredits + 2000 /*creditsIn*/ + 3000);
+}
+
+/* ============================================================
+   3) HUB MENU + CONTENT SECTIONS
+   ============================================================ */
+function goHub(){
+  const credits = document.getElementById('credits');
+  credits.classList.add('to-top');                 // slide credits upward
+  setTimeout(()=>{
+    show(document.getElementById('hub'));
+    // stagger the 6 buttons in
+    document.querySelectorAll('#hubGrid .hub-btn').forEach((b,i)=>{
+      b.classList.remove('in');
+      setTimeout(()=> b.classList.add('in'), 160*i);
+    });
+  }, 1500);
+}
+
+// ---- section content (editável: troquem pelos dados reais do livro) ----
+const SECTIONS = {
+  resumo: {
+    title:'Resumo breve do livro',
+    html:`
+      <p>A obra acompanha cinco adolescentes em uma perigosa missão no Pantanal
+      mato-grossense para desmantelar uma rede de crime organizado, abordando temas como
+      a destruição da natureza, o tráfico e a defesa dos povos indígenas.</p>
+      <ul>
+        <li><b>O estopim:</b> a aventura começa quando o professor Elias, amigo próximo do
+        grupo, é assassinado pelo "Centurião" logo após retornar de uma visita ao Pantanal.</li>
+        <li><b>A investigação:</b> intrigado e temendo pelo que o professor havia descoberto,
+        Crânio (o gênio do grupo) parte sozinho para a região, sendo rapidamente seguido
+        pelos outros Karas (Magrí, Calu, Chumbinho e Miguel).</li>
+        <li><b>O perigo:</b> no Pantanal, os adolescentes se deparam com um cenário alarmante
+        de destruição ambiental (desmatamento, morte de jacarés), dizimação de reservas
+        indígenas e tráfico de drogas e armas na fronteira.</li>
+        <li><b>O mistério do "Ente":</b> o grupo precisa enfrentar uma poderosa quadrilha
+        internacional liderada por uma figura misteriosa conhecida apenas como "Ente".</li>
+        <li><b>A grande revelação:</b> acontece quando os Karas descobrem que o "Ente" é, na
+        verdade, a Tia Matilde. O avião rosa que ela utilizava escondia todo o ouro
+        proveniente de negócios escusos. No confronto final, ela consegue escapar,
+        jogando-se no oceano junto com suas riquezas.</li>
+      </ul>`
+  },
+  personagens: {
+    title:'Personagens',
+    html:`
+      <p>Escolha um grupo de personagens para conhecer:</p>
+      <div class="choice-grid">
+        <button class="choice-btn" onclick="showPersonagem('principais')"><span class="ic">★</span> Personagens principais</button>
+        <button class="choice-btn" onclick="showPersonagem('secundarios')"><span class="ic">☆</span> Personagens secundários</button>
+      </div>`
+  },
+  autor: {
+    title:'Sobre o Autor',
+    html:`
+      <p><b>Pedro Bandeira de Luna Filho</b> (Santos, 9 de março de 1942) é um escritor
+      brasileiro de livros infanto-juvenis. Ele adquiriu notoriedade em 1983, com o
+      lançamento de <i>O Dinossauro Que Fazia Au-au</i>, seu livro infantil de estreia, e
+      passou a dedicar-se exclusivamente à autoria de títulos infanto-juvenis.</p>
+      <p>Bandeira tornou-se autor de mais de 100 obras, entre contos, poemas e narrativas
+      de diversos gêneros — incluindo o grande êxito juvenil <i>A Droga da Obediência</i>
+      (1984), que originou a série de seis títulos de nome <b>Os Karas</b>.</p>
+      <p>Além destes, tornou-se reconhecido por livros como <i>A Marca de uma Lágrima</i>
+      (1985) e <i>O Fantástico Mistério de Feiurinha</i> (1986), este último recebeu uma
+      adaptação cinematográfica em 2009.</p>`
+  },
+  opiniao: {
+    title:'O que achamos sobre o livro',
+    html:`
+      <p>O livro é muito bom, mas tem muitas partes confusas e que não dá para entender
+      direito. Mesmo assim, a narrativa é muito boa, a história é perfeita, os personagens
+      são ótimos e há uma reviravolta impressionante.</p>
+      <p>No total, o livro é muito bom, então recomendamos a todos lerem!</p>
+      <p style="margin-top:6px"><b>Nota total: 8,7</b></p>`
+  },
+  notas: {
+    title:'Nota de todos os participantes',
+    html:`
+      <p>Cada participante deu sua nota para o livro (de 0 a 10):</p>
+      <ul>
+        <li><b>Bernardo:</b> 10 / 10</li>
+        <li><b>João:</b> 9 / 10</li>
+        <li><b>Daniel:</b> 6,7 / 10</li>
+        <li><b>Gael:</b> 9 / 10</li>
+        <li><b>Murilo:</b> 8,5 / 10</li>
+        <li><b>Henrique:</b> 9 / 10</li>
+      </ul>
+      <p><b>Média do grupo:</b> 8,7 / 10</p>`
+  },
+  sobre: {
+    title:'Sobre o livro',
+    html:`
+      <p>O livro <i>Pântano de Sangue</i>, escrito por <b>Pedro Bandeira</b> e pertencente à
+      famosa série <b>Os Karas</b>, foi lançado originalmente em 1987.</p>
+      <ul>
+        <li><b>Pioneiro no público jovem:</b> é considerado o autor de literatura
+        infantojuvenil mais vendido do Brasil, com dezenas de milhões de exemplares
+        comercializados.</li>
+        <li><b>Foco em temas reais:</b> aborda questões cruciais da adolescência (primeiros
+        amores, amizade, ética e democracia), sempre com uma linguagem direta e inteligente.</li>
+        <li><b>Trama clássica:</b> a série Os Karas acompanha cinco estudantes do "Colégio
+        Elite", em São Paulo (Miguel, Magrí, Calú, Crânio e Chumbinho), que se unem para
+        solucionar mistérios e combater crimes internacionais.</li>
+      </ul>
+      <p>O autor da famosa série de livros Os Karas é o escritor brasileiro Pedro Bandeira.</p>`
+  }
+};
+
+const sheet = document.getElementById('sheet');
+document.querySelectorAll('#hubGrid .hub-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> openSection(btn.dataset.sec));
+});
+
+function renderSheet(inner){
+  sheet.innerHTML = inner;
+  // restart entrance animation
+  sheet.style.animation='none'; void sheet.offsetWidth; sheet.style.animation='';
+  sheet.scrollTop = 0;
+  show(document.getElementById('section'));
+}
+
+function openSection(key){
+  const data = SECTIONS[key];
+  if(!data) return;
+  renderSheet(`<h2>${data.title}</h2><div class="deco-line"></div>${data.html}`);
+}
+
+// sub-pages for the Personagens section
+const PERSONAGENS = {
+  principais: {
+    title:'Personagens principais',
+    html:`
+      <p style="font-size:clamp(17px,2.8vw,21px)"><b>🎭 Os Karas (Protagonistas)</b></p>
+      <ul>
+        <li><b>Miguel:</b> O líder carismático do grupo e presidente do Grêmio Estudantil. É o responsável por reunir os amigos e tomar as decisões mais difíceis.</li>
+        <li><b>Crânio:</b> O "gênio" do grupo. Dono de uma inteligência brilhante, é ele quem guia os amigos nessa missão após o assassinato do professor Elias.</li>
+        <li><b>Magri:</b> Ágil, corajosa e excelente ginasta, sempre usa sua perspicácia e força física para ajudar o grupo.</li>
+        <li><b>Calú:</b> Um artista nato e dotado de grande sensibilidade, é o integrante que traz equilíbrio emocional e estratégias criativas à equipe.</li>
+        <li><b>Chumbinho:</b> O mais jovem e caçula da turma. Muito esperto, corajoso e apaixonado por videogames, consegue sentir o perigo e resolver problemas sob pressão.</li>
+      </ul>`
+  },
+  secundarios: {
+    title:'Personagens secundários',
+    html:`
+      <ul>
+        <li><b>Professor Elias:</b> Professor de matemática e amigo de Crânio, recentemente havia visitado o Pantanal. É assassinado no início da trama, o que dá início à investigação.</li>
+        <li><b>Ente:</b> O principal antagonista da história. O codinome dado ao misterioso e implacável líder da organização criminosa que atua no Pantanal.</li>
+        <li><b>Tia Matilde:</b> Tia do Crânio, fazendeira e moradora da região pantaneira.</li>
+        <li><b>Piloto Bezerra:</b> Encontrado morto em uma canoa no Pantanal, com marcas de injeção de drogas e uma gaitinha prateada no bolso.</li>
+        <li><b>Detetive Andrade:</b> Policial que auxilia nos bastidores.</li>
+        <li><b>Robson (Araguaçu):</b> Líder de uma comunidade indígena local, fundamental para a descoberta das ações do crime organizado que ameaçam a natureza e os povos originários.</li>
+      </ul>`
+  }
+};
+
+function showPersonagem(key){
+  const p = PERSONAGENS[key];
+  if(!p) return;
+  renderSheet(
+    `<h2>${p.title}</h2><div class="deco-line"></div>${p.html}` +
+    `<button class="back-inline" onclick="openSection('personagens')">← Voltar aos personagens</button>`
+  );
+}
+
+document.getElementById('btnBack').addEventListener('click', ()=>{
+  show(document.getElementById('hub'));
+});
+
+// hub → back to the very beginning (start screen), allow replaying the intro
+document.getElementById('btnHubBack').addEventListener('click', ()=>{
+  // reset the credits/text scene so the intro can play cleanly again
+  const credits = document.getElementById('credits');
+  credits.classList.remove('show','to-top','compact');
+  stopGlitch();
+  document.getElementById('p1').classList.remove('drop','fade-out');
+  document.getElementById('p2').classList.remove('drop','fade-out');
+  document.getElementById('loading').classList.remove('show','hide');
+  // reset the cutscene
+  const cs = document.getElementById('cutscene');
+  cs.classList.remove('run');
+  started = false;
+  show(document.getElementById('start'));
+  startTitleGlitch();      // resume the title glitch back on the start screen
+});
+</script>
+</body>
+</html>
