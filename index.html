@@ -459,6 +459,60 @@
   }
   .hub-btn .txt{ position:relative; z-index:2; line-height:1.2; }
 
+  /* ===================== PONTOS + CADEADOS ===================== */
+  .hub-points{
+    position:absolute; top:12%; left:50%; transform:translateX(-50%);
+    z-index:4; display:flex; align-items:center; gap:8px;
+    font-family:"Georgia",serif; font-size:clamp(15px,2.6vw,22px); color:#1a1410;
+    padding:8px 20px; border-radius:999px;
+    background:linear-gradient(180deg,var(--glow),var(--gold-deep));
+    box-shadow:0 6px 20px rgba(0,0,0,.5), 0 0 22px rgba(255,216,122,.4);
+    font-weight:bold; letter-spacing:.02em;
+  }
+  .hub-points .hp-star{ color:#7a5212; }
+  .hub-points .hp-lbl{ font-weight:normal; }
+  #hubPointsVal{ min-width:1.2em; text-align:center; transition:transform .25s; }
+  #hubPoints.bump #hubPointsVal{ animation:ptBump .45s ease; }
+  @keyframes ptBump{ 0%,100%{transform:scale(1)} 40%{transform:scale(1.6); color:#7a1f1f;} }
+
+  /* locked / unlocked buttons */
+  .hub-btn .lock-badge{ position:absolute; top:8px; right:10px; z-index:3; font-size:18px; line-height:1;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)); transition:opacity .3s, transform .3s; }
+  .hub-btn .price-tag{ position:absolute; bottom:8px; right:12px; z-index:3;
+    font-family:"Georgia",serif; font-size:12px; font-weight:bold; color:#1a1410;
+    background:linear-gradient(180deg,var(--glow),var(--gold-deep)); padding:2px 9px; border-radius:999px;
+    opacity:0; transform:translateY(6px); transition:opacity .35s, transform .35s; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+  #hubGrid.prices-shown .hub-btn.locked .price-tag{ opacity:1; transform:translateY(0); }
+  .hub-btn.locked{ filter:saturate(.65) brightness(.9); }
+  .hub-btn.unlocked .lock-badge{ opacity:0; transform:scale(0); }
+  .hub-btn.unlocked .price-tag{ opacity:0 !important; }
+  .hub-btn.unlocked{ filter:none; border-color:var(--glow); }
+  .hub-btn.shake-no{ animation:shake .4s; border-color:#ff6b6b !important; }
+
+  /* overlay: mensagem ao tentar abrir bloqueado */
+  #unlockMsg{ position:absolute; inset:0; z-index:20; display:none; align-items:center; justify-content:center;
+    background:rgba(4,6,12,.7); backdrop-filter:blur(4px); }
+  #unlockMsg.show{ display:flex; animation:fadeBg .4s ease; }
+  .um-box{ max-width:80%; text-align:center; padding:28px 30px; color:var(--paper);
+    background:linear-gradient(160deg, rgba(30,42,66,.96), rgba(12,18,32,.98));
+    border:2px solid rgba(232,193,112,.55); border-radius:18px;
+    box-shadow:0 26px 70px rgba(0,0,0,.6); font-family:"Georgia",serif;
+    font-size:clamp(17px,3.2vw,26px); line-height:1.55; animation:popCard .4s cubic-bezier(.2,1.1,.3,1); }
+  .um-box b{ color:var(--glow); }
+
+  /* overlay: zoom nos pontos */
+  #pointsZoom{ position:absolute; inset:0; z-index:21; display:none; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 50%, rgba(40,30,8,.9), rgba(4,6,12,.96)); }
+  #pointsZoom.show{ display:flex; }
+  .pz-inner{ text-align:center; color:var(--glow); animation:pzZoom 3s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes pzZoom{ 0%{transform:scale(.2); opacity:0;} 18%{transform:scale(1.1); opacity:1;} 30%{transform:scale(1);} 82%{transform:scale(1); opacity:1;} 100%{transform:scale(1.25); opacity:0;} }
+  .pz-star{ font-size:clamp(50px,12vw,110px); line-height:1; filter:drop-shadow(0 0 24px rgba(255,216,122,.7)); animation:pzSpin 3s ease-in-out; }
+  @keyframes pzSpin{ 0%{transform:rotate(-25deg)} 50%{transform:rotate(15deg)} 100%{transform:rotate(0)} }
+  .pz-val{ font-size:clamp(70px,20vw,180px); font-weight:bold; font-family:"Georgia",serif; line-height:1;
+    background:linear-gradient(180deg,#fff8e6,var(--gold) 60%,var(--gold-deep));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .pz-lbl{ font-size:clamp(16px,3.4vw,28px); letter-spacing:.1em; text-transform:uppercase; color:var(--paper); margin-top:6px; }
+
   /* ===================== CONTENT SECTION ===================== */
   #section{ z-index:30; }
   #section .deep-bg{
@@ -879,8 +933,8 @@
   <!-- ===================== WHITE + TEXT ===================== -->
   <section id="white" class="layer">
     <div id="loading"><span class="load-text">Carregando</span><span class="load-dots"></span></div>
-    <div class="phrase phrase-1" id="p1">ESSE É O MELHOR TRABALHO DEEE</div>
-    <div class="phrase phrase-2" id="p2">Leitura e criaçãooooo</div>
+    <div class="phrase phrase-1" id="p1">Um trabalho de</div>
+    <div class="phrase phrase-2" id="p2">Leitura e criação</div>
 
     <div id="credits">
       <div class="credits-label">Feito por</div>
@@ -904,6 +958,8 @@
 
     <div class="hub-title">Menu Principal</div>
 
+    <div class="hub-points" id="hubPoints"><span class="hp-star">★</span> <span id="hubPointsVal">10</span> <span class="hp-lbl">pontos</span></div>
+
     <div class="hub-grid" id="hubGrid">
       <button class="hub-btn" data-sec="resumo"><span class="num">1</span><span class="txt">Resumo breve do livro</span></button>
       <button class="hub-btn" data-sec="personagens"><span class="num">2</span><span class="txt">Personagens</span></button>
@@ -912,6 +968,11 @@
       <button class="hub-btn" data-sec="notas"><span class="num">5</span><span class="txt">Nota de todos os participantes</span></button>
       <button class="hub-btn" data-sec="sobre"><span class="num">6</span><span class="txt">Sobre o livro</span></button>
     </div>
+
+    <!-- overlay: mensagem ao clicar bloqueado -->
+    <div id="unlockMsg"><div class="um-box" id="unlockMsgText"></div></div>
+    <!-- overlay: zoom nos pontos -->
+    <div id="pointsZoom"><div class="pz-inner"><div class="pz-star">★</div><div class="pz-val" id="pzVal">10</div><div class="pz-lbl">pontos para gastar!</div></div></div>
   </section>
 
   <!-- ===================== CONTENT SECTION ===================== -->
@@ -1779,9 +1840,64 @@ const SECTIONS = {
 };
 
 const sheet = document.getElementById('sheet');
+
+/* ---- sistema de pontos + cadeados no menu ---- */
+const PRICES = { resumo:2, personagens:1, autor:1, opiniao:1, notas:1, sobre:2 };
+let points = 10;
+let unlockMode = false;            // vira true depois do tutorial dos pontos
+const unlocked = {};               // sec -> true
+
+function updatePoints(){
+  document.getElementById('hubPointsVal').textContent = points;
+  const pz=document.getElementById('pzVal'); if(pz) pz.textContent = points;
+  const hp=document.getElementById('hubPoints');
+  hp.classList.remove('bump'); void hp.offsetWidth; hp.classList.add('bump');
+}
+
+// monta cadeado + etiqueta de preço em cada botão
 document.querySelectorAll('#hubGrid .hub-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=> openSection(btn.dataset.sec));
+  const sec = btn.dataset.sec, price = PRICES[sec];
+  btn.dataset.price = price;
+  btn.classList.add('locked');
+  const lock = document.createElement('span'); lock.className='lock-badge'; lock.textContent='🔒';
+  const tag  = document.createElement('span'); tag.className='price-tag'; tag.textContent = price + (price>1?' pts':' pt');
+  btn.appendChild(lock); btn.appendChild(tag);
+  btn.addEventListener('click', ()=> onHubBtn(btn));
 });
+
+function onHubBtn(btn){
+  const sec = btn.dataset.sec, price = PRICES[sec];
+  if(unlocked[sec]){ openSection(sec); return; }     // já desbloqueado → abre
+  if(!unlockMode){ runUnlockIntro(); return; }        // 1º clique → tutorial dos pontos
+  // modo desbloqueio: tenta comprar
+  if(points >= price){
+    points -= price; updatePoints();
+    unlocked[sec] = true;
+    btn.classList.remove('locked'); btn.classList.add('unlocked');
+    setTimeout(()=> openSection(sec), 350);
+  } else {
+    btn.classList.remove('shake-no'); void btn.offsetWidth; btn.classList.add('shake-no');
+  }
+}
+
+function runUnlockIntro(){
+  const um = document.getElementById('unlockMsg'), umt = document.getElementById('unlockMsgText');
+  umt.innerHTML = 'Eita, deu errado pelo visto...<br><br>Ei! Você tem <b>pontos</b> para dar a esse trabalho!<br>Use-os e desbloqueie!';
+  um.classList.add('show');
+  setTimeout(()=>{
+    um.classList.remove('show');
+    // zoom nos pontos por 3 segundos
+    const pz = document.getElementById('pointsZoom');
+    document.getElementById('pzVal').textContent = points;
+    pz.classList.add('show');
+    const inner = pz.querySelector('.pz-inner'); inner.style.animation='none'; void inner.offsetWidth; inner.style.animation='';
+    setTimeout(()=>{
+      pz.classList.remove('show');
+      document.getElementById('hubGrid').classList.add('prices-shown');  // revela preços
+      unlockMode = true;
+    }, 3000);
+  }, 4200);
+}
 
 function renderSheet(inner){
   sheet.innerHTML = inner;
