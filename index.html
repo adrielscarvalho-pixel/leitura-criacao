@@ -208,18 +208,18 @@
     color:var(--gold); font-size:42px; text-shadow:0 0 14px rgba(232,193,112,.6);
   }
   .cover-right{
-    left:50%; transform-origin:left center; border-radius:0 12px 12px 0;
-    z-index:6;
+    left:50%; transform-origin:right center; border-radius:0 12px 12px 0;
+    z-index:6; backface-visibility:hidden;
   }
   .cover-left{
-    right:50%; transform-origin:right center; border-radius:12px 0 0 12px;
-    z-index:6;
+    right:50%; transform-origin:left center; border-radius:12px 0 0 12px;
+    z-index:6; backface-visibility:hidden;
   }
-  /* opening animation triggered with cutscene */
-  #cutscene.run .cover-right{ animation:openRight 1.8s cubic-bezier(.4,.1,.2,1) .3s forwards; }
-  #cutscene.run .cover-left { animation:openLeft  1.8s cubic-bezier(.4,.1,.2,1) .3s forwards; }
-  @keyframes openRight{ from{ transform:rotateY(0deg);} to{ transform:rotateY(-155deg);} }
-  @keyframes openLeft { from{ transform:rotateY(0deg);} to{ transform:rotateY(155deg);} }
+  /* abre como portas (dobradiça nas bordas externas) e some, revelando o livro aberto */
+  #cutscene.run .cover-right{ animation:openRight 1.2s cubic-bezier(.4,.05,.2,1) .25s forwards; }
+  #cutscene.run .cover-left { animation:openLeft  1.2s cubic-bezier(.4,.05,.2,1) .25s forwards; }
+  @keyframes openRight{ 0%{ transform:rotateY(0deg); opacity:1; } 65%{ opacity:1; } 100%{ transform:rotateY(118deg); opacity:0; } }
+  @keyframes openLeft { 0%{ transform:rotateY(0deg); opacity:1; } 65%{ opacity:1; } 100%{ transform:rotateY(-118deg); opacity:0; } }
 
   /* turning pages (appear after covers open) */
   .flip{
@@ -236,13 +236,13 @@
     background:repeating-linear-gradient(180deg, rgba(120,90,40,.28) 0 1px, transparent 1px 12px);
   }
   /* fast, continuous page flipping that loops until the cutscene ends */
-  #cutscene.run .flip{ animation:pageFlip 0.55s linear infinite; }
-  #cutscene.run .flip.f1{ animation-delay:1.55s; }
-  #cutscene.run .flip.f2{ animation-delay:1.64s; }
-  #cutscene.run .flip.f3{ animation-delay:1.73s; }
-  #cutscene.run .flip.f4{ animation-delay:1.82s; }
-  #cutscene.run .flip.f5{ animation-delay:1.91s; }
-  #cutscene.run .flip.f6{ animation-delay:2.00s; }
+  #cutscene.run .flip{ animation:pageFlip 0.5s linear infinite; }
+  #cutscene.run .flip.f1{ animation-delay:1.30s; }
+  #cutscene.run .flip.f2{ animation-delay:1.38s; }
+  #cutscene.run .flip.f3{ animation-delay:1.46s; }
+  #cutscene.run .flip.f4{ animation-delay:1.54s; }
+  #cutscene.run .flip.f5{ animation-delay:1.62s; }
+  #cutscene.run .flip.f6{ animation-delay:1.70s; }
   /* page stays fully visible through the whole turn (no backface hiding),
      with shading to sell the lift; then resets invisibly on the right */
   @keyframes pageFlip{
