@@ -877,6 +877,54 @@
     background:repeating-linear-gradient(90deg, transparent 0 54px, rgba(16,18,24,.96) 54px 66px);
     box-shadow:inset 0 0 70px rgba(0,0,0,.75); }
 
+  /* ===================== GUIA NARRADOR + SEGREDO ===================== */
+  .play-btn{ position:absolute; top:16px; left:50%; transform:translateX(-50%); z-index:6; cursor:pointer;
+    padding:12px 34px; font-family:"Georgia",serif; font-size:clamp(15px,2.6vw,22px); font-weight:bold; letter-spacing:.12em;
+    color:#06210f; background:linear-gradient(180deg,#8dffa0,#2f9e4f); border:2px solid #bdffc4; border-radius:999px;
+    box-shadow:0 6px 22px rgba(0,0,0,.5), 0 0 26px rgba(124,252,138,.55); animation:secretPulse 2s ease-in-out infinite; }
+  .play-btn:hover{ transform:translateX(-50%) scale(1.06) translateY(-2px); filter:brightness(1.06); }
+  .play-btn:active{ transform:translateX(-50%) scale(.98); }
+
+  #guideDim{ position:fixed; inset:0; z-index:45; background:rgba(0,0,0,.74); opacity:0; pointer-events:none; transition:opacity .45s; }
+  #guideDim.show{ opacity:1; }
+  .secret-top-btn.spotlight{ z-index:48 !important; animation:spotPulse .9s ease-in-out infinite !important;
+    box-shadow:0 0 0 4px #fff, 0 0 44px 12px rgba(255,216,122,.9) !important; border-color:#fff !important; }
+  @keyframes spotPulse{ 0%,100%{ transform:translateX(-50%) scale(1.22) } 50%{ transform:translateX(-50%) scale(1.34) } }
+
+  #guide{ position:fixed; inset:0; z-index:50; display:none; pointer-events:none; }
+  #guide.show{ display:block; }
+  .guide-box{ position:absolute; left:50%; bottom:8%; transform:translateX(-50%); pointer-events:auto; cursor:pointer;
+    width:min(680px,90vw); padding:20px 28px 24px; text-align:center; color:var(--paper);
+    background:linear-gradient(160deg, rgba(20,30,52,.97), rgba(8,12,22,.98));
+    border:3px solid var(--gold); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.7);
+    font-family:"Georgia",serif; font-size:clamp(16px,3vw,24px); line-height:1.5;
+    animation:popCard .35s cubic-bezier(.2,1.1,.3,1); }
+  .guide-box b{ color:var(--glow); }
+  .guide-box::after{ content:"▶ clique para continuar"; position:absolute; right:16px; bottom:6px;
+    font-size:11px; color:#8fa0bd; letter-spacing:.08em; opacity:.7; }
+
+  #secretFlow{ position:fixed; inset:0; z-index:62; display:none; align-items:center; justify-content:center;
+    background:rgba(4,6,12,.74); backdrop-filter:blur(6px); }
+  #secretFlow.open{ display:flex; animation:fadeBg .3s ease; }
+  .sf-card{ width:min(440px,92vw); padding:30px 26px 26px; text-align:center; color:var(--paper);
+    background:linear-gradient(160deg, rgba(30,42,66,.97), rgba(12,18,32,.98)); border:2px solid rgba(232,193,112,.5);
+    border-radius:20px; box-shadow:0 30px 80px rgba(0,0,0,.6); animation:popCard .35s cubic-bezier(.2,1.1,.3,1); }
+  .sf-icon{ font-size:38px; margin-bottom:8px; }
+  .sf-text{ font-family:"Georgia",serif; font-size:clamp(16px,3vw,21px); line-height:1.55; }
+  .sf-text b{ color:var(--glow); }
+  #sfInput{ width:100%; margin-top:16px; padding:13px 16px; font-size:18px; text-align:center; font-family:"Georgia",serif;
+    color:#fff; letter-spacing:.1em; background:rgba(0,0,0,.35); border:2px solid rgba(232,193,112,.45); border-radius:12px; outline:none; }
+  #sfInput:focus{ border-color:var(--glow); box-shadow:0 0 16px rgba(255,216,122,.3); }
+  .sf-error{ height:0; overflow:hidden; opacity:0; color:#ff8a8a; font-size:13px; margin-top:8px; transition:opacity .25s, height .25s; }
+  .sf-error.show{ height:18px; opacity:1; }
+  .sf-card.shake{ animation:shake .4s; }
+  .sf-actions{ display:flex; gap:10px; margin-top:18px; }
+  .sf-btn{ flex:1; padding:12px 14px; cursor:pointer; border-radius:12px; font-family:"Georgia",serif; font-size:15px; font-weight:bold;
+    color:#1a1410; border:none; background:linear-gradient(180deg,var(--glow),var(--gold-deep)); box-shadow:0 0 14px rgba(255,216,122,.35);
+    transition:transform .2s, filter .2s; }
+  .sf-btn:hover{ transform:translateY(-2px); filter:brightness(1.08); }
+  .sf-btn.sf-sec{ color:#cdd6e6; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); box-shadow:none; }
+
   /* utility */
   .clickable{ cursor:pointer; }
 </style>
@@ -892,6 +940,7 @@
     <div class="vignette"></div>
 
     <button class="secret-top-btn" id="btnSecret">🥔 Botão secreto, ultra secreto</button>
+    <button class="play-btn" id="btnJogar" style="display:none">▶ JOGAR</button>
 
     <div class="title-wrap">
       <div class="game-title">Leitura &amp; Criação</div>
@@ -1048,6 +1097,21 @@
         <div class="dlg-name" id="dlgName"></div>
         <div class="dlg-text" id="dlgText"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- guia narrador + escurecimento + zoom -->
+  <div id="guideDim"></div>
+  <div id="guide"><div class="guide-box" id="guideBox"></div></div>
+
+  <!-- fluxo do segredo (dicas por pontos) -->
+  <div id="secretFlow">
+    <div class="sf-card">
+      <div class="sf-icon">🔒</div>
+      <div class="sf-text" id="sfText"></div>
+      <input id="sfInput" type="text" autocomplete="off" spellcheck="false" placeholder="Senha..." style="display:none" />
+      <div class="sf-error" id="sfError"></div>
+      <div class="sf-actions" id="sfActions"></div>
     </div>
   </div>
 
@@ -1270,36 +1334,122 @@ document.getElementById('btnExit').addEventListener('click', ()=>{
   requestAnimationFrame(()=> byeEl.style.opacity = '1');
 });
 
-/* ---- secret button + password modal (correct password: "Batata") ---- */
-const pwModal = document.getElementById('pwModal');
-const pwInput = document.getElementById('pwInput');
-const pwError = document.getElementById('pwError');
-const pwCard  = pwModal.querySelector('.pw-card');
-
-function openPwModal(){
-  pwInput.value = '';
-  pwError.classList.remove('show');
-  pwModal.classList.add('open');
-  setTimeout(()=> pwInput.focus(), 50);
+/* ---- GUIA NARRADOR ---- */
+let guideTimer = null;
+function guideLines(lines, onEnd, opts){
+  opts = opts || {};
+  const g = document.getElementById('guide'), box = document.getElementById('guideBox');
+  g.classList.add('show');
+  let i = 0;
+  function render(){
+    box.innerHTML = lines[i];
+    clearTimeout(guideTimer);
+    if(i === lines.length-1 && opts.hold) return;     // segura a última fala
+    guideTimer = setTimeout(advance, 3000);
+  }
+  function advance(){
+    clearTimeout(guideTimer);
+    if(i < lines.length-1){ i++; render(); }
+    else { g.classList.remove('show'); if(onEnd) onEnd(); }
+  }
+  box.onclick = ()=>{ if(i===lines.length-1 && opts.hold) return; advance(); };
+  render();
 }
-function closePwModal(){ pwModal.classList.remove('open'); }
+function hideGuide(){ clearTimeout(guideTimer); document.getElementById('guide').classList.remove('show'); }
+function spotlightSecret(on){
+  document.getElementById('guideDim').classList.toggle('show', on);
+  document.getElementById('btnSecret').classList.toggle('spotlight', on);
+}
 
-function checkPassword(){
-  if(pwInput.value.trim().toLowerCase() === 'batata'){
-    closePwModal();
-    runCrashSequence();                            // fake crash cutscene
-  } else {
-    pwError.classList.add('show');
-    pwCard.classList.remove('shake'); void pwCard.offsetWidth; pwCard.classList.add('shake');
-    pwInput.value = ''; pwInput.focus();
+/* ---- depois de ler todos os botões: aponta para o segredo ---- */
+let secretGuideDone = false, secretUnlocked = false;
+function maybeOfferSecret(){
+  if(secretGuideDone || secretUnlocked) return;
+  if(!Object.keys(PRICES).every(s => unlocked[s])) return;   // só quando leu todos
+  secretGuideDone = true;
+  setTimeout(()=>{
+    guideLines([
+      'Olha só! Você ainda tem <b>'+points+(points===1?' ponto':' pontos')+'</b>!',
+      'Mas... não tem mais nada para gastar aqui.',
+      'Vamos ver se tem algo para comprar no início!'
+    ], ()=>{
+      show(document.getElementById('start')); startTitleGlitch();
+      setTimeout(()=>{
+        guideLines(['Ei... está vendo o que eu vejo?','Um <b>botão secreto</b>!'], ()=>{
+          spotlightSecret(true);
+          guideLines(['<b>Clica nele!</b>'], null, { hold:true });
+        });
+      }, 500);
+    });
+  }, 700);
+}
+
+/* ---- FLUXO DO SEGREDO (dicas por pontos) ---- */
+let sfStepNow = '';
+function startSecretFlow(){
+  hideGuide(); spotlightSecret(false);
+  document.getElementById('secretFlow').classList.add('open');
+  sfGoto('ask1');
+}
+function closeSf(){ document.getElementById('secretFlow').classList.remove('open'); }
+function sfErr(msg){
+  const err=document.getElementById('sfError'); err.textContent=msg; err.classList.add('show');
+  const card=document.querySelector('#secretFlow .sf-card'); card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+}
+function sfBtn(label, fn, sec){ const b=document.createElement('button'); b.className='sf-btn'+(sec?' sf-sec':''); b.textContent=label; b.onclick=fn; document.getElementById('sfActions').appendChild(b); }
+function spend(n){ if(points < n) return false; points -= n; updatePoints(); return true; }
+function sfGoto(step){
+  sfStepNow = step;
+  const txt=document.getElementById('sfText'), inp=document.getElementById('sfInput'),
+        act=document.getElementById('sfActions'), err=document.getElementById('sfError');
+  err.classList.remove('show'); inp.value=''; act.innerHTML='';
+  if(step==='ask1'){
+    txt.innerHTML='Poxa... precisa de senha. Mas, conhecendo o criador desse site, ele deve ter <b>2 senhas possíveis</b>!<br><br>Me dá um ponto e eu te falo uma delas!';
+    inp.style.display='none';
+    sfBtn('🪙 Dar 1 ponto', ()=>{ if(!spend(1)) return sfErr('Você não tem pontos!'); sfGoto('hint1'); });
+    sfBtn('Cancelar', closeSf, true);
+  } else if(step==='hint1'){
+    txt.innerHTML='Tente essa: <b>BJDGHM</b>';
+    inp.style.display='block'; setTimeout(()=>inp.focus(),60);
+    sfBtn('Tentar', ()=>sfTry(1));
+    sfBtn('Cancelar', closeSf, true);
+  } else if(step==='ask2'){
+    txt.innerHTML='Hmm... não foi essa.<br><br>Me dá mais um pontinho e eu te falo <b>outra</b> senha!';
+    inp.style.display='none';
+    sfBtn('🪙 Dar 1 ponto', ()=>{ if(!spend(1)) return sfErr('Você não tem pontos!'); sfGoto('hint2'); });
+    sfBtn('Cancelar', closeSf, true);
+  } else if(step==='hint2'){
+    txt.innerHTML='Agora tente <b>Batata</b>!';
+    inp.style.display='block'; setTimeout(()=>inp.focus(),60);
+    sfBtn('Tentar', ()=>sfTry(2));
+    sfBtn('Cancelar', closeSf, true);
   }
 }
+function sfTry(stage){
+  const v=document.getElementById('sfInput').value.trim().toLowerCase();
+  if(v==='batata'){ secretSuccess(); return; }
+  if(stage===1){ sfGoto('ask2'); }              // errou a 1ª (BJDGHM é furada) → pede outro ponto
+  else { sfErr('Não é essa... é Batata!'); }
+}
+function secretSuccess(){
+  closeSf();
+  secretUnlocked = true;
+  document.getElementById('btnSecret').style.display='none';
+  document.getElementById('btnJogar').style.display='inline-block';
+  guideLines([
+    '<b>BOA! Conseguimos!</b>',
+    'Agora é só você jogar...',
+    'E lembre-se: se você se desesperar no jogo, <b>sempre abra a JANELA</b>!'
+  ], ()=>hideGuide());
+}
 
-document.getElementById('btnSecret').addEventListener('click', openPwModal);
-document.getElementById('pwOk').addEventListener('click', checkPassword);
-document.getElementById('pwCancel').addEventListener('click', closePwModal);
-pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') checkPassword(); if(e.key==='Escape') closePwModal(); });
-pwModal.addEventListener('click', e=>{ if(e.target===pwModal) closePwModal(); });
+document.getElementById('btnSecret').addEventListener('click', startSecretFlow);
+document.getElementById('btnJogar').addEventListener('click', ()=>{ hideGuide(); runCrashSequence(); });
+document.getElementById('sfInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ if(sfStepNow==='hint1') sfTry(1); else if(sfStepNow==='hint2') sfTry(2); }
+  if(e.key==='Escape') closeSf();
+});
+document.getElementById('secretFlow').addEventListener('click', e=>{ if(e.target.id==='secretFlow') closeSf(); });
 document.getElementById('secretClose').addEventListener('click', ()=>{
   show(document.getElementById('start'));
   startTitleGlitch();
@@ -1952,6 +2102,7 @@ function showPersonagem(key){
 
 document.getElementById('btnBack').addEventListener('click', ()=>{
   show(document.getElementById('hub'));
+  maybeOfferSecret();   // leu todos os botões? → guia para o segredo
 });
 
 // hub → back to the very beginning (start screen), allow replaying the intro
